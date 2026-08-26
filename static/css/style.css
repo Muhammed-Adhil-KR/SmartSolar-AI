@@ -1,0 +1,11 @@
+/* Solar DSS - project-wide styles.
+   Kept minimal in Phase 1; extended as dashboard/report UIs are built. */
+
+body {
+    background-color: #f7f9fb;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}

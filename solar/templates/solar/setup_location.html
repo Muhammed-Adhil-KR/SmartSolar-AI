@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Set Your Location{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map { height: 350px; border-radius: 0.5rem; display: none; margin-top: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h4 class="mb-3">Step 1: Set Your Location</h4>
+
+                <button id="geoBtn" type="button" class="btn btn-outline-success mb-3">
+                    <i class="bi bi-geo-alt"></i> Use My Current Location
+                </button>
+                <div id="geoStatus" class="small text-muted mb-3"></div>
+
+                <p class="text-muted small">
+                    Or search by nearest city/town, then drag the pin on the map to your exact
+                    location — this matters if you live in a village or rural area not listed by name.
+                </p>
+                <form method="post" class="d-flex gap-2 mb-3">
+                    {% csrf_token %}
+                    {{ form.query }}
+                    <button type="submit" class="btn btn-success">Search</button>
+                </form>
+
+                {% if results %}
+                    <ul class="list-group mb-3">
+                        {% for r in results %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ r.display_name }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    onclick="showMap({{ r.latitude }}, {{ r.longitude }})">
+                                Show on map
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <p class="text-muted small">Not exact? Drag the pin on the map below to your precise location.</p>
+                {% endif %}
+
+                <div id="map"></div>
+                <p id="coordText" class="small text-muted mt-2" style="display:none;"></p>
+
+                <form id="confirmForm" method="post" action="{% url 'solar:confirm_location' %}" style="display:none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="latitude" id="latInput">
+                    <input type="hidden" name="longitude" id="lonInput">
+                    <button type="submit" class="btn btn-success w-100 mt-2">Confirm This Location</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let map, marker;
+
+function showMap(lat, lon) {
+    document.getElementById('map').style.display = 'block';
+    document.getElementById('confirmForm').style.display = 'block';
+    document.getElementById('coordText').style.display = 'block';
+
+    if (!map) {
+        map = L.map('map').setView([lat, lon], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+        marker.on('dragend', function () {
+            const pos = marker.getLatLng();
+            updateCoords(pos.lat, pos.lng);
+        });
+    } else {
+        map.setView([lat, lon], 14);
+        marker.setLatLng([lat, lon]);
+    }
+    updateCoords(lat, lon);
+    setTimeout(function () { map.invalidateSize(); }, 200);
+}
+
+function updateCoords(lat, lon) {
+    document.getElementById('latInput').value = lat;
+    document.getElementById('lonInput').value = lon;
+    document.getElementById('coordText').textContent =
+        'Pin position: ' + lat.toFixed(5) + ', ' + lon.toFixed(5) + ' — drag the marker to fine-tune.';
+}
+
+document.getElementById('geoBtn').addEventListener('click', function () {
+    const status = document.getElementById('geoStatus');
+    if (!navigator.geolocation) {
+        status.textContent = "Geolocation is not supported by your browser. Please search manually.";
+        return;
+    }
+    status.textContent = "Requesting location permission...";
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            status.textContent = "Location found — drag the pin if it isn't exact, then confirm.";
+            showMap(position.coords.latitude, position.coords.longitude);
+        },
+        function (error) {
+            if (error.code === error.PERMISSION_DENIED) {
+                status.textContent = "Location permission denied. Please search manually below.";
+            } else {
+                status.textContent = "Could not retrieve location. Please search manually below.";
+            }
+        }
+    );
+});
+</script>
+{% endblock %}

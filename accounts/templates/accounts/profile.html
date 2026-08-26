@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Profile - Solar DSS{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h4 class="mb-3">My Profile</h4>
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+                <p><strong>Phone:</strong> {{ profile.phone|default:"—" }}</p>
+                <p><strong>Location:</strong> {{ profile.location_name|default:"Not set up yet" }}</p>
+                {% if profile.has_location %}
+                    <!-- <p class="text-muted small">Lat: {{ profile.latitude }}, Lon: {{ profile.longitude }}</p> -->          
+                    <a href="{% url 'solar:edit_system' %}" class="btn btn-sm btn-outline-success mt-2 mb-1">Edit Solar System</a><br>
+                    {% if user.battery or user_solar_system.needs_battery %}
+                        <a href="{% url 'solar:edit_battery' %}" class="btn btn-sm btn-outline-secondary mt-1 mb-1">Battery Settings</a>
+                    {% endif %}
+                    {% if user.gridconfiguration or user_solar_system.needs_grid_config %}
+                        <a href="{% url 'solar:edit_grid' %}" class="btn btn-sm btn-outline-secondary mt-1 mb-1">Grid Settings</a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small">Location setup incomplete.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
