@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Delete Appliance{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-exclamation-triangle text-danger display-4 mb-3"></i>
+                <h5>Permanently delete "{{ appliance.name }}"?</h5>
+                <p class="text-muted small">This cannot be undone. Consider "Deactivate" instead if you just want to stop using it temporarily.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Delete Permanently</button>
+                    <a href="{% url 'solar:appliance_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,4 +12,9 @@ urlpatterns = [
     path('edit/', views.edit_system, name='edit_system'),
     path('edit/battery/', views.edit_battery, name='edit_battery'),
     path('edit/grid/', views.edit_grid, name='edit_grid'),
+    path('appliances/', views.appliance_list, name='appliance_list'),
+    path('appliances/add/', views.appliance_add, name='appliance_add'),
+    path('appliances/<int:pk>/edit/', views.appliance_edit, name='appliance_edit'),
+    path('appliances/<int:pk>/toggle/', views.appliance_toggle_active, name='appliance_toggle_active'),
+    path('appliances/<int:pk>/delete/', views.appliance_delete, name='appliance_delete'),
 ]

@@ -1,31 +1,79 @@
 {% extends "base.html" %}
-{% block title %}Register - Solar DSS{% endblock %}
+{% block title %}Create Account - Solar DSS{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+{% block navbar %}{% endblock %}
+{% block content_wrapper_class %}auth-split{% endblock %}
+{% block footer %}{% endblock %}
+{% block messages_wrapper %}{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h4 class="mb-3 text-center">Create Account</h4>
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors|striptags }}</div>
-                            {% endif %}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-success w-100">Register</button>
-                </form>
-                <p class="text-center mt-3 mb-0">
-                    Already have an account? <a href="{% url 'accounts:login' %}">Login</a>
-                </p>
+<div class="auth-side">
+    <div class="sun-icon"><i class="bi bi-brightness-high-fill"></i></div>
+    <h1>Take control of your<br>solar-powered home.</h1>
+    <p class="lead-text">
+        Register your solar system and let the Intelligent Decision Support
+        System forecast tomorrow's generation and recommend how to use it.
+    </p>
+    <ul class="auth-feature-list">
+        <li><i class="bi bi-cloud-sun"></i> Next-day generation predictions from real weather forecasts</li>
+        <li><i class="bi bi-lightning-charge"></i> Smart appliance scheduling recommendations</li>
+        <li><i class="bi bi-battery-charging"></i> Battery &amp; grid guidance tailored to your system</li>
+    </ul>
+</div>
+
+<div class="auth-form-side">
+    <div class="auth-card">
+        <div class="brand-row">
+            <i class="bi bi-brightness-high-fill"></i>
+            <span class="fw-bold">Solar DSS</span>
+        </div>
+        <h3>Create your account</h3>
+        <p class="subtitle">Start with your details — solar system setup comes next.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors|striptags }}</div>{% endif %}
+                </div>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors|striptags }}</div>{% endif %}
+            </div>
+            <button type="submit" class="btn btn-success">Create Account</button>
+        </form>
+        <div class="auth-switch-link">
+            Already have an account? <a href="{% url 'accounts:login' %}">Login</a>
         </div>
     </div>
 </div>

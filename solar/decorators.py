@@ -10,8 +10,8 @@ from .models import SolarSystem, Battery, GridConfiguration
 def setup_status(user):
     solar_system = SolarSystem.objects.filter(user=user).first()
     return {
-        'has_location': hasattr(user, 'profile') and user.profile.has_location,
         'has_solar_system': solar_system is not None,
+        'has_location': bool(solar_system and solar_system.has_location),
         'has_battery': Battery.objects.filter(user=user).exists(),
         'has_grid_config': GridConfiguration.objects.filter(user=user).exists(),
         'solar_system': solar_system,
@@ -20,10 +20,10 @@ def setup_status(user):
 
 def next_setup_step(user):
     status = setup_status(user)
-    if not status['has_location']:
-        return 'solar:setup_location'
     if not status['has_solar_system']:
         return 'solar:setup_system'
+    if not status['has_location']:
+        return 'solar:setup_location'
     system = status['solar_system']
     if system.needs_battery and not status['has_battery']:
         return 'solar:setup_battery'

@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 
 from .forms import RegistrationForm
-
+from django.contrib.auth.forms import AuthenticationForm
 
 def register(request):
     if request.user.is_authenticated:
@@ -37,7 +37,7 @@ class CustomLogoutView(LogoutView):
 
 @login_required
 def profile_view(request):
-    return render(request, 'accounts/profile.html', {'profile': request.user.profile})
+    return render(request, 'accounts/profile.html')
 
 
 @login_required
@@ -47,3 +47,14 @@ def setup_pending(request):
     (Phase 3) will eventually replace this redirect target.
     """
     return render(request, 'accounts/setup_pending.html')
+
+class StyledAuthenticationForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+
+class CustomLoginView(LoginView):
+    template_name = 'accounts/login.html'
+    authentication_form = StyledAuthenticationForm

@@ -5,22 +5,26 @@
     <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm mt-4">
             <div class="card-body p-4">
-                <h4 class="mb-3">My Profile</h4>
+                <h4 class="mb-3"><i class="bi bi-person-circle text-success"></i> My Profile</h4>
+                <p><strong>Name:</strong> {{ user.get_full_name|default:user.username }}</p>
                 <p><strong>Username:</strong> {{ user.username }}</p>
                 <p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
-                <p><strong>Phone:</strong> {{ profile.phone|default:"—" }}</p>
-                <p><strong>Location:</strong> {{ profile.location_name|default:"Not set up yet" }}</p>
-                {% if profile.has_location %}
-                    <!-- <p class="text-muted small">Lat: {{ profile.latitude }}, Lon: {{ profile.longitude }}</p> -->          
+
+                <hr>
+                <h6 class="text-muted">Solar System</h6>
+                {% if user_solar_system %}
+                    <p><strong>Type:</strong> {{ user_solar_system.get_system_type_display }}</p>
+                    <p><strong>Capacity:</strong> {{ user_solar_system.capacity_kw }} kW</p>
+                    <p><strong>Location:</strong> {{ user_solar_system.location_name|default:"Not set yet" }}</p>
                     <a href="{% url 'solar:edit_system' %}" class="btn btn-sm btn-outline-success mt-2 mb-1">Edit Solar System</a><br>
-                    {% if user.battery or user_solar_system.needs_battery %}
+                    {% if user_solar_system.needs_battery or user.battery %}
                         <a href="{% url 'solar:edit_battery' %}" class="btn btn-sm btn-outline-secondary mt-1 mb-1">Battery Settings</a>
                     {% endif %}
-                    {% if user.gridconfiguration or user_solar_system.needs_grid_config %}
+                    {% if user_solar_system.needs_grid_config or user.gridconfiguration %}
                         <a href="{% url 'solar:edit_grid' %}" class="btn btn-sm btn-outline-secondary mt-1 mb-1">Grid Settings</a>
                     {% endif %}
                 {% else %}
-                    <p class="text-muted small">Location setup incomplete.</p>
+                    <p class="text-muted small">Solar system setup incomplete.</p>
                 {% endif %}
             </div>
         </div>

@@ -1,11 +1,163 @@
-/* Solar DSS - project-wide styles.
-   Kept minimal in Phase 1; extended as dashboard/report UIs are built. */
+/* ============================================================
+   Solar DSS — Theme
+   Palette: deep emerald (primary/action), warm amber (sun/accent)
+   Type: Outfit (headings), Inter (body)
+   ============================================================ */
 
-body {
-    background-color: #f7f9fb;
+:root {
+    --emerald-900: #0b3d2e;
+    --emerald-700: #0f5c3f;
+    --emerald-600: #12734d;
+    --emerald-500: #16a35f;
+    --amber-500: #ffb627;
+    --amber-600: #f59e0b;
+    --bg: #f6f8f6;
+    --ink: #1b2823;
+    --muted: #6b7a72;
+    --card-shadow: 0 10px 30px rgba(11, 61, 46, 0.08);
+    --card-shadow-hover: 0 16px 40px rgba(11, 61, 46, 0.14);
+    --radius-lg: 1.1rem;
+    --radius-md: 0.7rem;
 }
 
+body.app-body {
+    background-color: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 700; }
+
+/* ---------- Navbar ---------- */
+.app-navbar {
+    background: linear-gradient(120deg, var(--emerald-900), var(--emerald-700) 60%, var(--emerald-600));
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    padding-top: .7rem; padding-bottom: .7rem;
+}
+.brand-sun { color: var(--amber-500); font-size: 1.2rem; }
+.app-navbar .nav-link { font-weight: 500; color: rgba(255,255,255,0.88) !important; }
+.app-navbar .nav-link:hover { color: #fff !important; }
+.user-chip { display: flex; align-items: center; gap: .4rem; }
+.btn-logout {
+    background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 999px; padding: .35rem 1rem; font-size: .85rem; font-weight: 500;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.22); color: #fff; }
+.btn-nav-cta {
+    background: var(--amber-500); color: var(--emerald-900) !important; font-weight: 600;
+    border-radius: 999px; padding: .4rem 1.1rem;
+}
+.btn-nav-cta:hover { background: var(--amber-600); }
+
+/* ---------- Cards ---------- */
 .card {
-    border: none;
-    border-radius: 0.75rem;
+    border: none; border-radius: var(--radius-lg); box-shadow: var(--card-shadow);
+    transition: transform .18s ease, box-shadow .18s ease;
 }
+.card:hover { box-shadow: var(--card-shadow-hover); }
+
+/* ---------- Buttons ---------- */
+.btn-success {
+    background: linear-gradient(135deg, var(--emerald-600), var(--emerald-700));
+    border: none; border-radius: var(--radius-md); font-weight: 600; padding: .6rem 1.3rem;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn-success:hover {
+    background: linear-gradient(135deg, var(--emerald-700), var(--emerald-900));
+    transform: translateY(-1px); box-shadow: 0 8px 20px rgba(11,61,46,0.3);
+}
+.btn-outline-success, .btn-outline-primary, .btn-outline-secondary, .btn-outline-danger {
+    border-radius: var(--radius-md); font-weight: 500;
+}
+
+/* ---------- Forms ---------- */
+.form-control, .form-select {
+    border-radius: var(--radius-md); border: 1px solid #dbe6e0; padding: .6rem .9rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--emerald-500); box-shadow: 0 0 0 .2rem rgba(22,163,95,0.15);
+}
+.form-label { font-weight: 600; color: #334339; font-size: .9rem; }
+.form-text { font-size: .8rem; }
+
+/* ---------- Badges / Tables / Alerts ---------- */
+.badge { border-radius: 999px; font-weight: 500; padding: .4em .85em; }
+.table { background: #fff; border-radius: var(--radius-lg); overflow: hidden; }
+.table thead { background-color: #eaf4ee; }
+.table-hover tbody tr:hover { background-color: #f4faf6; }
+.alert { border: none; border-left: 4px solid transparent; border-radius: var(--radius-md); }
+.alert-success { border-left-color: var(--emerald-500); background: #eaf7f0; }
+.alert-danger  { border-left-color: #dc3545; background: #fdecec; }
+.alert-warning { border-left-color: var(--amber-500); background: #fff8e6; }
+.alert-info    { border-left-color: #0dcaf0; background: #e8f9fc; }
+
+footer { border-top: 1px solid #e2ece5; }
+
+/* ============================================================
+   AUTH PAGES — full-screen split layout
+   ============================================================ */
+body.auth-body {
+    background: var(--emerald-900);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+.auth-split {
+    min-height: 100vh;
+    display: flex;
+}
+.auth-side {
+    flex: 1;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255,182,39,0.25), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(22,163,95,0.35), transparent 50%),
+        linear-gradient(160deg, var(--emerald-900), #062018);
+    color: #fff;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.auth-side::before {
+    content: '';
+    position: absolute; width: 380px; height: 380px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,182,39,0.35), transparent 70%);
+    top: -100px; right: -100px;
+}
+.auth-side .sun-icon {
+    font-size: 2.4rem; color: var(--amber-500); margin-bottom: 1.2rem;
+}
+.auth-side h1 { font-size: 2.2rem; line-height: 1.25; margin-bottom: 1rem; }
+.auth-side p.lead-text { color: rgba(255,255,255,0.78); font-size: 1.02rem; max-width: 420px; }
+.auth-feature-list { list-style: none; padding: 0; margin-top: 2rem; }
+.auth-feature-list li { display: flex; align-items: flex-start; gap: .7rem; margin-bottom: 1rem; color: rgba(255,255,255,0.88); }
+.auth-feature-list i { color: var(--amber-500); font-size: 1.1rem; margin-top: .1rem; }
+
+.auth-form-side {
+    flex: 1; background: #fbfdfb;
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 2rem;
+}
+.auth-card { width: 100%; max-width: 420px; }
+.auth-card .brand-row { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.8rem; }
+.auth-card .brand-row i { color: var(--amber-600); font-size: 1.4rem; }
+.auth-card h3 { margin-bottom: .3rem; }
+.auth-card .subtitle { color: var(--muted); margin-bottom: 1.8rem; font-size: .95rem; }
+.auth-card .btn-success { width: 100%; padding: .75rem; font-size: 1rem; }
+.auth-switch-link { text-align: center; margin-top: 1.4rem; color: var(--muted); font-size: .92rem; }
+.auth-switch-link a { color: var(--emerald-600); font-weight: 600; text-decoration: none; }
+.auth-switch-link a:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+    .auth-split { flex-direction: column; }
+    .auth-side { padding: 3rem 2rem; min-height: 280px; }
+}
+
+/* ---------- Setup step indicator ---------- */
+.step-indicator { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.8rem; }
+.step-dot {
+    width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; background: #e4ede8; color: var(--muted);
+}
+.step-dot.active { background: var(--emerald-600); color: #fff; }
+.step-dot.done { background: var(--amber-500); color: var(--emerald-900); }
+.step-line { flex: 1; height: 2px; background: #e4ede8; }

@@ -1,28 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Login - Solar DSS{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+{% block navbar %}{% endblock %}
+{% block content_wrapper_class %}auth-split{% endblock %}
+{% block footer %}{% endblock %}
+{% block messages_wrapper %}{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h4 class="mb-3 text-center">Login</h4>
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors|striptags }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-success w-100">Login</button>
-                </form>
-                <p class="text-center mt-3 mb-0">
-                    Don't have an account? <a href="{% url 'accounts:register' %}">Register</a>
-                </p>
-            </div>
+<div class="auth-side">
+    <div class="sun-icon"><i class="bi bi-brightness-high-fill"></i></div>
+    <h1>Welcome back to<br>your solar dashboard.</h1>
+    <p class="lead-text">
+        Check today's forecast, review last night's recommendations, and see
+        how your solar system is performing.
+    </p>
+</div>
+
+<div class="auth-form-side">
+    <div class="auth-card">
+        <div class="brand-row">
+            <i class="bi bi-brightness-high-fill"></i>
+            <span class="fw-bold">Solar DSS</span>
+        </div>
+        <h3>Login</h3>
+        <p class="subtitle">Enter your credentials to continue.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success">Login</button>
+        </form>
+        <div class="auth-switch-link">
+            Don't have an account? <a href="{% url 'accounts:register' %}">Register</a>
         </div>
     </div>
 </div>

@@ -23,6 +23,11 @@ class SolarSystem(models.Model):
     inverter_capacity_kw = models.FloatField(null=True, blank=True)
     installation_date = models.DateField(null=True, blank=True)
 
+    # Location fields, moved here from the removed Profile model.
+    location_name = models.CharField(max_length=255, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -36,6 +41,10 @@ class SolarSystem(models.Model):
     @property
     def needs_grid_config(self):
         return self.system_type in (self.ON_GRID, self.HYBRID)
+
+    @property
+    def has_location(self):
+        return self.latitude is not None and self.longitude is not None
 
 
 class Battery(models.Model):
@@ -98,3 +107,96 @@ class GridConfiguration(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s grid config"
+
+class Appliance(models.Model):
+    CRITICAL = 'CRITICAL'
+    HIGH = 'HIGH'
+    MEDIUM = 'MEDIUM'
+    LOW = 'LOW'
+    PRIORITY_CHOICES = [
+        (CRITICAL, 'Critical'),
+        (HIGH, 'High'),
+        (MEDIUM, 'Medium'),
+        (LOW, 'Low'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appliances')
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Your own label for this appliance, e.g. 'Kitchen Fridge', 'Bedroom AC 1'."
+    )
+    category = models.CharField(
+        max_length=100,
+        help_text="Functional group, e.g. 'Refrigeration', 'Cooling', 'Laundry'. Used to group appliances, not to identify a single one."
+    )
+    rated_power_w = models.FloatField(
+        validators=[MinValueValidator(1)],
+        help_text="Power rating in Watts, usually printed on the appliance nameplate."
+    )
+    average_usage_hours = models.FloatField(
+        validators=[MinValueValidator(0), MaxValueValidator(24)],
+        help_text="Typical hours per day this appliance runs."
+    )
+    daily_energy_kwh = models.FloatField(
+        editable=False, default=0,
+        help_text="Auto-calculated: rated power (W) x usage hours / 1000."
+    )
+
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default=MEDIUM)
+    is_shiftable = models.BooleanField(
+        default=False,
+        help_text="Can this appliance's usage time be moved to align with solar availability?"
+    )
+    solar_preferred = models.BooleanField(
+        default=True,
+        help_text="Should the system try to schedule this appliance during solar generation hours?"
+    )
+    preferred_start_time = models.TimeField(
+        null=True, blank=True,
+        help_text="Optional: earliest time you'd normally like this appliance running."
+    )
+    preferred_end_time = models.TimeField(
+        null=True, blank=True,
+        help_text="Optional: latest time you'd normally like this appliance running."
+    )
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-priority', 'name']
+
+    def save(self, *args, **kwargs):
+        # Always recompute from source fields so this can never drift out of sync.
+        self.daily_energy_kwh = round((self.rated_power_w * self.average_usage_hours) / 1000, 3)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"
+
+
+class SolarGeneration(models.Model):
+    MANUAL = 'MANUAL'
+    CSV = 'CSV'
+    INVERTER = 'INVERTER'
+    SOURCE_CHOICES = [
+        (MANUAL, 'Manual Entry'),
+        (CSV, 'CSV Upload'),
+        (INVERTER, 'Inverter (future)'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='generations')
+    date = models.DateField()
+    generation_kwh = models.FloatField(validators=[MinValueValidator(0)])
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=MANUAL)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date} - {self.generation_kwh} kWh"

@@ -1,5 +1,5 @@
 from django import forms
-from .models import SolarSystem, Battery, GridConfiguration
+from .models import SolarSystem, Battery, GridConfiguration, Appliance
 
 
 class LocationSearchForm(forms.Form):
@@ -35,3 +35,16 @@ class GridConfigurationForm(forms.ModelForm):
     class Meta:
         model = GridConfiguration
         fields = ['import_tariff_per_kwh', 'export_tariff_per_kwh', 'export_enabled', 'net_metering_enabled']
+
+class ApplianceForm(forms.ModelForm):
+    class Meta:
+        model = Appliance
+        fields = [
+            'name', 'category', 'rated_power_w', 'average_usage_hours',
+            'priority', 'is_shiftable', 'solar_preferred',
+            'preferred_start_time', 'preferred_end_time',
+        ]
+        widgets = {
+            'preferred_start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'preferred_end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }

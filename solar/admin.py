@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import SolarSystem, Battery, GridConfiguration
+from .models import SolarSystem, Battery, GridConfiguration, Appliance, SolarGeneration
+
 
 
 @admin.register(SolarSystem)
@@ -18,4 +19,19 @@ class BatteryAdmin(admin.ModelAdmin):
 @admin.register(GridConfiguration)
 class GridConfigurationAdmin(admin.ModelAdmin):
     list_display = ('user', 'import_tariff_per_kwh', 'export_enabled', 'net_metering_enabled')
+    search_fields = ('user__username',)
+from .models import SolarSystem, Battery, GridConfiguration, Appliance, SolarGeneration
+
+
+@admin.register(Appliance)
+class ApplianceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'category', 'priority', 'daily_energy_kwh', 'is_active')
+    list_filter = ('priority', 'is_active', 'is_shiftable')
+    search_fields = ('name', 'category', 'user__username')
+
+
+@admin.register(SolarGeneration)
+class SolarGenerationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'generation_kwh', 'source')
+    list_filter = ('source',)
     search_fields = ('user__username',)
