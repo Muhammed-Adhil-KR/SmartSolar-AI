@@ -177,26 +177,3 @@ class Appliance(models.Model):
         return f"{self.name} ({self.user.username})"
 
 
-class SolarGeneration(models.Model):
-    MANUAL = 'MANUAL'
-    CSV = 'CSV'
-    INVERTER = 'INVERTER'
-    SOURCE_CHOICES = [
-        (MANUAL, 'Manual Entry'),
-        (CSV, 'CSV Upload'),
-        (INVERTER, 'Inverter (future)'),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='generations')
-    date = models.DateField()
-    generation_kwh = models.FloatField(validators=[MinValueValidator(0)])
-    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=MANUAL)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user', 'date')
-        ordering = ['-date']
-
-    def __str__(self):
-        return f"{self.user.username} - {self.date} - {self.generation_kwh} kWh"

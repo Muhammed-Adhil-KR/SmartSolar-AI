@@ -5,6 +5,8 @@ from django.contrib import messages
 from .forms import LocationSearchForm, SolarSystemForm, BatteryForm, GridConfigurationForm
 from .services import search_locations, reverse_geocode, sync_system_dependencies
 from .decorators import next_setup_step
+from django.db.models import Case, When, Value, IntegerField, Sum
+from django.core.paginator import Paginator
 
 
 def build_step_context(system, current_key):
@@ -217,7 +219,76 @@ from .forms import ApplianceForm
 @login_required
 def appliance_list(request):
     appliances = Appliance.objects.filter(user=request.user)
-    return render(request, 'solar/appliance_list.html', {'appliances': appliances})
+
+    # --- Filters ---
+    priority = request.GET.get('priority', '')
+    category = request.GET.get('category', '')
+    status = request.GET.get('status', '')
+    sort = request.GET.get('sort', 'priority')
+
+    if priority:
+        appliances = appliances.filter(priority=priority)
+    if category:
+        appliances = appliances.filter(category__iexact=category)
+    if status == 'active':
+        appliances = appliances.filter(is_active=True)
+    elif status == 'inactive':
+        appliances = appliances.filter(is_active=False)
+
+    # --- Sorting ---
+    # Priority is stored as text (CRITICAL/HIGH/MEDIUM/LOW), which doesn't sort
+    # correctly alphabetically. This annotation maps it to a real severity
+    # order so "sort by priority" means what a user expects.
+    priority_order = Case(
+        When(priority='CRITICAL', then=Value(0)),
+        When(priority='HIGH', then=Value(1)),
+        When(priority='MEDIUM', then=Value(2)),
+        When(priority='LOW', then=Value(3)),
+        output_field=IntegerField(),
+    )
+    appliances = appliances.annotate(priority_rank=priority_order)
+
+    sort_options = {
+        'name': ['name'],
+        'priority': ['priority_rank', 'name'],
+        'energy': ['-daily_energy_kwh'],
+    }
+    appliances = appliances.order_by(*sort_options.get(sort, ['priority_rank', 'name']))
+
+    # --- Summary: total daily energy demand across ACTIVE appliances only ---
+    total_active_energy = Appliance.objects.filter(
+        user=request.user, is_active=True
+    ).aggregate(total=Sum('daily_energy_kwh'))['total'] or 0
+
+    # --- Categories for the filter dropdown (only ones the user actually has) ---
+    categories = (
+        Appliance.objects.filter(user=request.user)
+        .exclude(category='')
+        .values_list('category', flat=True)
+        .distinct()
+        .order_by('category')
+    )
+
+    # --- Pagination ---
+    paginator = Paginator(appliances, 8)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # Preserve filters/sort across page links without duplicating "page" in the URL
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
+
+    context = {
+        'page_obj': page_obj,
+        'total_active_energy': round(total_active_energy, 2),
+        'categories': categories,
+        'selected_priority': priority,
+        'selected_category': category,
+        'selected_status': status,
+        'selected_sort': sort,
+        'querystring': querystring,
+    }
+    return render(request, 'solar/appliance_list.html', context)
 
 
 @login_required

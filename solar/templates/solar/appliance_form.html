@@ -12,7 +12,8 @@
                 <form method="post">
                     {% csrf_token %}
                     {% for field in form %}
-                        <div class="mb-3">
+                        <div class="mb-3 {% if field.name == 'preferred_start_time' or field.name == 'preferred_end_time' %}preferred-time-field{% endif %}"
+                            {% if field.name == 'is_shiftable' %}id="shiftable-field"{% endif %}>
                             <label class="form-label">{{ field.label }}</label>
                             {{ field }}
                             {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
@@ -27,4 +28,24 @@
         </div>
     </div>
 </div>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const shiftableCheckbox = document.querySelector('#shiftable-field input[type="checkbox"]');
+    const timeFields = document.querySelectorAll('.preferred-time-field');
+
+    function togglePreferredTimeFields() {
+        const show = shiftableCheckbox ? shiftableCheckbox.checked : true;
+        timeFields.forEach(function (field) {
+            field.style.display = show ? 'block' : 'none';
+        });
+    }
+
+    if (shiftableCheckbox) {
+        shiftableCheckbox.addEventListener('change', togglePreferredTimeFields);
+        togglePreferredTimeFields();
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}
