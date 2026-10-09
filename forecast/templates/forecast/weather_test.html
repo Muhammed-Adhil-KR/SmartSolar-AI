@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Weather Test - Solar DSS{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h4 class="mt-4 mb-1">Weather Service — Verification Page</h4>
+        <p class="text-muted small mb-4">
+            Temporary page for Phase 7 — confirms exactly what Open-Meteo returns
+            before the real dashboard (Phase 8) and ML prediction (Phase 9) are built on top of it.
+        </p>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        {% if current_weather %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Current Weather
+                    {% if current_weather.cached %}<span class="badge bg-secondary">cached</span>{% endif %}
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li><strong>Temperature:</strong> {{ current_weather.temperature_c }} °C</li>
+                    <li><strong>Humidity:</strong> {{ current_weather.humidity_percent }} %</li>
+                    <li><strong>Wind Speed:</strong> {{ current_weather.wind_speed_mps }} m/s</li>
+                    <li><strong>Rainfall:</strong> {{ current_weather.rainfall_mm }} mm</li>
+                    <li><strong>Condition:</strong> {{ current_weather.condition }}</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if forecast_json %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Tomorrow's Forecast — ML-Ready Dictionary</h5>
+                <p class="text-muted small">
+                    This is the exact structure Phase 9's prediction service will receive
+                    (plus Day_of_Year, added separately at inference time).
+                </p>
+                <pre class="bg-light p-3 rounded">{{ forecast_json }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

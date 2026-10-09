@@ -28,15 +28,24 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:home' %}">Dashboard</a></li>
-                <li class="nav-item">
-                    {% if user_solar_system %}
-                        <a class="nav-link" href="{% url 'solar:edit_system' %}">Solar System</a>
-                    {% else %}
-                        <a class="nav-link" href="{% url 'solar:setup_system' %}">Solar System</a>
-                    {% endif %}
+                    <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Solar System</a>
+                    <ul class="dropdown-menu">
+                        {% if user_solar_system %}
+                            <li><a class="dropdown-item" href="{% url 'solar:edit_system' %}">System &amp; Location</a></li>
+                            {% if user_solar_system.needs_battery or user.battery %}
+                                <li><a class="dropdown-item" href="{% url 'solar:edit_battery' %}">Battery</a></li>
+                            {% endif %}
+                            {% if user_solar_system.needs_grid_config or user.gridconfiguration %}
+                                <li><a class="dropdown-item" href="{% url 'solar:edit_grid' %}">Grid</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li><a class="dropdown-item" href="{% url 'solar:setup_system' %}">Set up solar system</a></li>
+                        {% endif %}
+                    </ul>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'solar:appliance_list' %}">Appliances</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Forecast</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'forecast:weather_test' %}">Forecast</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Recommendations</a></li>
             </ul>
             <ul class="navbar-nav align-items-lg-center">

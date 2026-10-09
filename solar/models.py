@@ -82,6 +82,12 @@ class Battery(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s battery ({self.capacity_kwh} kWh)"
+    
+    @property
+    def usable_energy_kwh(self):
+        """Energy currently available above the minimum SOC floor."""
+        usable_percent = max(0, self.current_soc_percent - self.minimum_soc_percent)
+        return round(self.capacity_kwh * usable_percent / 100, 2)
 
 
 class GridConfiguration(models.Model):

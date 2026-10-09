@@ -161,3 +161,29 @@ body.auth-body {
 .step-dot.active { background: var(--emerald-600); color: #fff; }
 .step-dot.done { background: var(--amber-500); color: var(--emerald-900); }
 .step-line { flex: 1; height: 2px; background: #e4ede8; }
+
+
+/* ---------- Dashboard ---------- */
+.stat-tile {
+    background: #f1f8f4;
+    border-radius: var(--radius-md);
+    padding: .8rem .4rem;
+    height: 100%;
+}
+.stat-tile i { color: var(--emerald-600); font-size: 1.2rem; }
+.stat-tile .stat-value { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; margin-top: .2rem; }
+.stat-tile .stat-label { color: var(--muted); font-size: .75rem; }
+
+.summary-list li {
+    display: flex; justify-content: space-between;
+    padding: .4rem 0; border-bottom: 1px dashed #e4ede8; font-size: .92rem;
+}
+.summary-list li:last-child { border-bottom: none; }
+.summary-list li span { color: var(--muted); }
+
+.prediction-placeholder {
+    display: flex; align-items: center; gap: .9rem;
+    border: 2px dashed #cfe3d7; border-radius: var(--radius-md);
+    padding: .9rem 1rem; background: #fbfdfb;
+}
+.prediction-placeholder i { font-size: 1.6rem; color: var(--amber-600); }

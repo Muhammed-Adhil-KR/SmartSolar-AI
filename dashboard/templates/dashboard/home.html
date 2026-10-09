@@ -1,21 +1,165 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - Solar DSS{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card mt-4 border-0">
-            <div class="card-body text-center py-5">
-                <div class="mb-3" style="font-size:3rem; color: var(--amber-600);">
-                    <i class="bi bi-cloud-sun-fill"></i>
+<div class="container-xl pb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 mb-4">
+        <div>
+            <h3 class="mb-0">Welcome, {{ user.first_name|default:user.username }}</h3>
+            <p class="text-muted small mb-0">
+                <i class="bi bi-geo-alt"></i> {{ system.location_name|default:"Location not set" }}
+            </p>
+        </div>
+        <span class="badge" style="background: var(--emerald-600); color:#fff; font-size:.9rem;">
+            {{ system.get_system_type_display }} &middot; {{ system.capacity_kw }} kW
+        </span>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Current Weather -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="mb-1"><i class="bi bi-cloud-sun-fill" style="color: var(--amber-600);"></i> Current Weather</h5>
+                    {% if current_weather %}
+                        <p class="text-muted small mb-3">
+                            Model estimate (Open-Meteo) &middot; Updated {{ current_weather.fetched_at|time:"H:i" }}
+                        </p>
+                        <div class="display-6 fw-bold">{{ current_weather.temperature_c|floatformat:1 }}°C</div>
+                        <div class="text-muted mb-3">{{ current_weather.condition }}</div>
+                        <div class="row g-2 text-center">
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-droplet"></i>
+                                <div class="stat-value">{{ current_weather.humidity_percent|floatformat:0 }}%</div>
+                                <div class="stat-label">Humidity</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-wind"></i>
+                                <div class="stat-value">{{ current_weather.wind_speed_mps|floatformat:1 }} m/s</div>
+                                <div class="stat-label">Wind</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-cloud-rain"></i>
+                                <div class="stat-value">{{ current_weather.rainfall_mm|floatformat:1 }} mm</div>
+                                <div class="stat-label">Rainfall</div>
+                            </div></div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-3 mb-0">{{ current_error }}</div>
+                    {% endif %}
                 </div>
-                <h2>Intelligent Decision Support System for Solar Energy</h2>
-                <p class="text-muted">
-                    Weather integration, ML prediction, and the recommendation engine
-                    will appear here as later phases are completed.
-                </p>
-                <span class="badge" style="background: var(--emerald-600); color:#fff;">Setup Complete</span>
             </div>
         </div>
+
+        <!-- Tomorrow's Forecast + prediction placeholder -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="bi bi-calendar2-week" style="color: var(--emerald-600);"></i> Tomorrow's Forecast</h5>
+                    {% if forecast %}
+                        <p class="text-muted small mb-3">{{ forecast.date|date:"l, d M Y" }}</p>
+                        <div class="row g-2 text-center mb-3">
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-thermometer-half"></i>
+                                <div class="stat-value">{{ forecast.temperature_c|floatformat:1 }}°C</div>
+                                <div class="stat-label">Avg Temp</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-droplet"></i>
+                                <div class="stat-value">{{ forecast.humidity_percent|floatformat:0 }}%</div>
+                                <div class="stat-label">Humidity</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-wind"></i>
+                                <div class="stat-value">{{ forecast.wind_speed_mps|floatformat:1 }} m/s</div>
+                                <div class="stat-label">Wind</div>
+                            </div></div>
+                            <div class="col-6"><div class="stat-tile">
+                                <i class="bi bi-cloud-rain"></i>
+                                <div class="stat-value">{{ forecast.rainfall_mm|floatformat:1 }} mm</div>
+                                <div class="stat-label">Rainfall</div>
+                            </div></div>
+                            <div class="col-6"><div class="stat-tile">
+                                <i class="bi bi-brightness-high"></i>
+                                <div class="stat-value">{{ forecast.solar_irradiance_kwhm2|floatformat:2 }} kWh/m²</div>
+                                <div class="stat-label">Solar Irradiance</div>
+                            </div></div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">{{ forecast_error }}</div>
+                    {% endif %}
+                    <div class="prediction-placeholder">
+                        <i class="bi bi-lightning-charge"></i>
+                        <div>
+                            <div class="fw-semibold">Predicted Solar Generation</div>
+                            <div class="text-muted small">Available once the prediction model is integrated.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appliances -->
+        <div class="col-lg-{% if battery %}6{% else %}12{% endif %}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-lightning-charge-fill" style="color: var(--emerald-600);"></i> My Appliances</h5>
+                        <a href="{% url 'solar:appliance_list' %}" class="btn btn-sm btn-outline-success">Manage</a>
+                    </div>
+                    {% if appliance_summary.active_count or appliance_summary.inactive_count %}
+                        <div class="row g-2 text-center">
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-plug"></i>
+                                <div class="stat-value">{{ appliance_summary.active_count }}</div>
+                                <div class="stat-label">Active</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-clock-history"></i>
+                                <div class="stat-value">{{ appliance_summary.shiftable_count }}</div>
+                                <div class="stat-label">Shiftable</div>
+                            </div></div>
+                            <div class="col-4"><div class="stat-tile">
+                                <i class="bi bi-speedometer2"></i>
+                                <div class="stat-value">{{ appliance_summary.total_energy }}</div>
+                                <div class="stat-label">kWh / day</div>
+                            </div></div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-plug display-5 d-block mb-2"></i>
+                            No appliances registered yet.
+                            <div class="mt-3">
+                                <a href="{% url 'solar:appliance_add' %}" class="btn btn-success btn-sm">Add your first appliance</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Battery (only if one exists) -->
+        {% if battery %}
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-battery-half" style="color: var(--emerald-600);"></i> Battery</h5>
+                        <a href="{% url 'solar:edit_battery' %}" class="btn btn-sm btn-outline-success">Update charge</a>
+                    </div>
+                    <div class="progress mb-3" style="height: 12px;">
+                        <div class="progress-bar bg-success" style="width: {{ battery.current_soc_percent|floatformat:0 }}%"></div>
+                    </div>
+                    <ul class="list-unstyled summary-list mb-0">
+                        <li><span>Charge level</span><strong>{{ battery.current_soc_percent|floatformat:0 }}%</strong></li>
+                        <li><span>Usable now (above minimum)</span><strong>{{ battery.usable_energy_kwh }} kWh</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </div>
 {% endblock %}
