@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 
 class WeatherData(models.Model):
@@ -38,3 +40,21 @@ class WeatherData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date} - {self.weather_type}"
+
+class Prediction(models.Model):
+    """Predicted solar generation (kWh) for one user and one date."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='predictions')
+    weather_data = models.ForeignKey(WeatherData, on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='predictions')
+    prediction_for_date = models.DateField()
+    predicted_generation_kwh = models.FloatField(validators=[MinValueValidator(0)])
+    capacity_kw_used = models.FloatField()
+    model_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ('user', 'prediction_for_date')
+        ordering = ['-prediction_for_date']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.prediction_for_date} - {self.predicted_generation_kwh} kWh"

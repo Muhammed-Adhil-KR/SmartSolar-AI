@@ -101,8 +101,11 @@ GRID_EMISSION_FACTOR_KG_PER_KWH = float(
     os.environ.get("GRID_EMISSION_FACTOR_KG_PER_KWH", "0.72")
 )
 
-ML_MODEL_PATH = BASE_DIR / "ml_models" / "random_forest_model.joblib"
+# --- ML model integration (Phase 9) ---
+ML_MODEL_PATH = BASE_DIR / "ml_models" / "random_forest_tuned.pkl"
+ML_MODEL_NAME = "RandomForestRegressor (tuned)"   # stored with each prediction in Phase 10
 
+# Must match the model's training columns AND their order exactly.
 MODEL_FEATURES = [
     "Temperature_C",
     "Humidity_%",
@@ -111,3 +114,20 @@ MODEL_FEATURES = [
     "Rainfall_mm",
     "Day_of_Year",
 ]
+
+# Capacity scaling is ON: the model was trained on ~3 kW households, so its output is
+# multiplied by (user's capacity_kw / MODEL_REFERENCE_CAPACITY_KW).
+# Set MODEL_REFERENCE_CAPACITY_KW to the exact capacity of the training households.
+PREDICTION_SCALE_BY_CAPACITY = True
+MODEL_REFERENCE_CAPACITY_KW = 3.0
+
+
+# --- Decision Support System (Phase 11) ---
+CURRENCY_SYMBOL = "₹"
+DSS_DEFAULT_SOLAR_WINDOW = (9, 16)     # used when hourly sunlight data is unavailable
+DSS_WINDOW_PEAK_FRACTION = 0.5         # window = hours with sunlight >= 50% of the day's peak
+DSS_MIN_PEAK_IRRADIANCE_WM2 = 150      # below this peak, sunlight is too weak to recommend shifting loads
+DSS_MIN_USEFUL_GENERATION_KWH = 1.0    # below this predicted generation, skip shift advice
+DSS_LOW_COVERAGE_RATIO = 0.5           # "poor day": generation below 50% of expected usage
+DSS_LOW_BATTERY_SOC_PERCENT = 50       # "low battery": charge below 50%
+DSS_MAX_SCHEDULE_RECOMMENDATIONS = 5   # at most 5 appliance-scheduling tips per day

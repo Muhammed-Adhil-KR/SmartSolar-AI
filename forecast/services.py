@@ -13,6 +13,8 @@ and rainfall for "now" from the matching hourly timestamp.
 import requests
 from datetime import date, timedelta
 from django.utils import timezone as dj_timezone
+import logging
+logger = logging.getLogger(__name__)
 
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
@@ -67,7 +69,10 @@ class WeatherService:
             response = requests.get(OPEN_METEO_URL, params=params, timeout=10)
             response.raise_for_status()
         except requests.RequestException as exc:
-            raise WeatherServiceError(f"Could not reach the weather service: {exc}") from exc
+            logger.warning("Weather request failed: %s", exc)
+            raise WeatherServiceError(
+                "Could not reach the weather service. Check your internet connection and try again."
+            ) from exc
 
         try:
             data = response.json()

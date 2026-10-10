@@ -3,6 +3,8 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
 from django.shortcuts import render
+from datetime import date, timedelta
+from forecast.models import Prediction
 
 from forecast.services import (
     WeatherServiceError,
@@ -53,6 +55,8 @@ def home(request):
         'shiftable_count': active.filter(is_shiftable=True).count(),
         'inactive_count': Appliance.objects.filter(user=user, is_active=False).count(),
     }
+    tomorrow = date.today() + timedelta(days=1)
+    prediction = Prediction.objects.filter(user=request.user, prediction_for_date=tomorrow).first()
 
     return render(request, 'dashboard/home.html', {
         'system': system,
@@ -62,4 +66,6 @@ def home(request):
         'forecast': forecast,
         'forecast_error': forecast_error,
         'appliance_summary': appliance_summary,
+        'prediction': prediction, 
+        'tomorrow': tomorrow,
     })
