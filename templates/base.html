@@ -46,7 +46,7 @@
                 </li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'solar:appliance_list' %}">Appliances</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'forecast:prediction_history' %}">Predictions</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Recommendations</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'decision_support:current' %}">Recommendations</a></li>
             </ul>
             <ul class="navbar-nav align-items-lg-center">
                 {% if user.is_authenticated %}

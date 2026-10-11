@@ -359,7 +359,7 @@ class DecisionSupportEngine:
         parts.append("All figures are estimates.")
         cost = self.estimate_cost_savings()
         recs.append(self._rec(
-            Rec.GENERAL, Rec.LOW, "Tomorrow's energy summary", " ".join(parts),
+            Rec.GENERAL, Rec.LOW, Rec.SUMMARY_TITLE, " ".join(parts),
             energy=b.self_consumed, savings=cost['total_savings'] if cost['applicable'] else None))
 
         # R4: surplus that nothing can absorb
@@ -393,26 +393,65 @@ class DecisionSupportEngine:
         return list(Rec.objects.filter(prediction=self.prediction).order_by('id'))
 
 
-def generate_recommendations(user, prediction=None, window=None):
-    """
-    Load the user's data and run the engine for one prediction
-    (default: tomorrow's). Raises DecisionSupportError if it can't run.
-    """
+def _load_engine(user, prediction, window=None):
+    """Load the user's current data and return a ready DecisionSupportEngine."""
     system = getattr(user, 'solarsystem', None)
     if system is None:
         raise DecisionSupportError("Set up your solar system before generating recommendations.")
-    if prediction is None:
-        tomorrow = date.today() + timedelta(days=1)
-        prediction = Prediction.objects.filter(user=user, prediction_for_date=tomorrow).first()
-    if prediction is None:
-        raise DecisionSupportError("Generate tomorrow's prediction first; recommendations are built from it.")
-
-    if window is None:
-        window = get_solar_window(system, prediction.prediction_for_date)
-    engine = DecisionSupportEngine(
+    return DecisionSupportEngine(
         user, prediction, system,
         list(Appliance.objects.filter(user=user, is_active=True)),
         battery=Battery.objects.filter(user=user).first(),
         grid_config=GridConfiguration.objects.filter(user=user).first(),
         window=window)
-    return engine.run()
+
+
+def tomorrows_prediction(user):
+    return Prediction.objects.filter(
+        user=user, prediction_for_date=date.today() + timedelta(days=1)).first()
+
+
+def generate_recommendations(user, prediction=None, window=None):
+    """
+    Run the engine for one prediction (default: tomorrow's) and save the result.
+    Raises DecisionSupportError if it can't run.
+    """
+    if getattr(user, 'solarsystem', None) is None:
+        raise DecisionSupportError("Set up your solar system before generating recommendations.")
+    if prediction is None:
+        prediction = tomorrows_prediction(user)
+    if prediction is None:
+        raise DecisionSupportError("Generate tomorrow's prediction first; recommendations are built from it.")
+    if window is None:
+        window = get_solar_window(user.solarsystem, prediction.prediction_for_date)
+    return _load_engine(user, prediction, window).run()
+
+
+# ---------------------------------------------------------------- reading helpers for the UI
+
+def summary_tiles(user, prediction):
+    """
+    The four headline numbers shown above the recommendation cards. Calculated from
+    the same balance the engine uses; nothing extra is stored. Tiles that don't apply
+    to the user's system type (grid / battery) are left out. Empty if no active appliances.
+    """
+    engine = _load_engine(user, prediction)
+    if not engine.appliances:
+        return []
+    b, system = engine.balance, engine.system
+    tiles = [{'icon': 'bi-sun', 'label': 'Usage covered by solar', 'value': f"{b.coverage * 100:.0f}%"}]
+    if system.needs_grid_config:
+        tiles.append({'icon': 'bi-plug', 'label': 'Expected grid import', 'value': f"{b.grid_import:.1f} kWh"})
+    if system.needs_battery:
+        tiles.append({'icon': 'bi-battery-half', 'label': 'Battery supply', 'value': f"{b.battery_used:.1f} kWh"})
+    tiles.append({'icon': 'bi-tree', 'label': 'CO\u2082 avoided', 'value': f"{b.co2_avoided_kg:.1f} kg"})
+    return tiles
+
+
+def dashboard_recommendations(prediction, limit=3):
+    """(most important actionable recommendations, total count) for the dashboard card. Summary excluded."""
+    if prediction is None:
+        return [], 0
+    qs = Rec.objects.filter(prediction=prediction)
+    top = list(qs.exclude(title=Rec.SUMMARY_TITLE).by_priority()[:limit])
+    return top, qs.count()

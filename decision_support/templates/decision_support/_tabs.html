@@ -1,0 +1,12 @@
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a class="nav-link {% if active == 'current' %}active{% endif %}" href="{% url 'decision_support:current' %}">
+            <i class="bi bi-lightbulb"></i> Tomorrow
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active == 'history' %}active{% endif %}" href="{% url 'decision_support:history' %}">
+            <i class="bi bi-clock-history"></i> History
+        </a>
+    </li>
+</ul>

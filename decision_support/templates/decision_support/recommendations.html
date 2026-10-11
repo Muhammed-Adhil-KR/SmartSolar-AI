@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Recommendations - Solar DSS{% endblock %}
+{% block content %}
+<div class="container-xl pb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 mb-3">
+        <div>
+            <h3 class="mb-0">Recommendations</h3>
+            <p class="text-muted small mb-0">Advice for {{ tomorrow|date:"l, d M Y" }}</p>
+        </div>
+        {% if prediction %}
+        <form method="post" action="{% url 'decision_support:refresh' %}" id="refresh-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm" id="refresh-btn">
+                <i class="bi bi-arrow-repeat"></i> Refresh recommendations
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% include "decision_support/_tabs.html" with active="current" %}
+
+    {% if not prediction %}
+        <div class="card"><div class="card-body text-center py-5">
+            <i class="bi bi-cloud-sun display-5 d-block mb-2 text-muted"></i>
+            <p class="mb-1 fw-semibold">No prediction for tomorrow yet</p>
+            <p class="text-muted small">Recommendations are built from tomorrow's solar generation prediction.</p>
+            <a href="{% url 'dashboard:home' %}" class="btn btn-success">Go to dashboard to generate it</a>
+        </div></div>
+
+    {% elif not recs %}
+        <div class="card"><div class="card-body text-center py-5">
+            <i class="bi bi-lightbulb display-5 d-block mb-2 text-muted"></i>
+            <p class="mb-1 fw-semibold">No recommendations yet</p>
+            <p class="text-muted small">
+                They are cleared whenever you change your appliances, battery, grid settings or system type,
+                so the advice always matches your current setup. Click <strong>Refresh recommendations</strong> to rebuild them.
+            </p>
+        </div></div>
+
+    {% else %}
+        <p class="text-muted small">
+            Based on tomorrow's prediction of {{ prediction.predicted_generation_kwh }} kWh
+            &middot; generated {{ generated_at|date:"d M, H:i" }}. All figures are estimates.
+        </p>
+
+        {% if tiles %}
+        <div class="row g-2 text-center mb-3">
+            {% for tile in tiles %}
+            <div class="col-6 col-md"><div class="stat-tile">
+                <i class="bi {{ tile.icon }}"></i>
+                <div class="stat-value">{{ tile.value }}</div>
+                <div class="stat-label">{{ tile.label }}</div>
+            </div></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="d-grid gap-3">
+            {% for rec in recs %}{% include "decision_support/_card.html" %}{% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  var form = document.getElementById('refresh-form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      var b = document.getElementById('refresh-btn');
+      b.disabled = true; b.textContent = 'Refreshing...';
+    });
+  }
+</script>
+{% endblock %}

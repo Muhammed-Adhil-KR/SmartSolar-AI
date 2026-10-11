@@ -13,6 +13,7 @@ from forecast.services import (
 )
 from solar.decorators import setup_required
 from solar.models import Appliance, Battery
+from decision_support.services import dashboard_recommendations
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ def home(request):
     }
     tomorrow = date.today() + timedelta(days=1)
     prediction = Prediction.objects.filter(user=request.user, prediction_for_date=tomorrow).first()
+    top_recs, rec_total = dashboard_recommendations(prediction)
 
     return render(request, 'dashboard/home.html', {
         'system': system,
@@ -68,4 +70,6 @@ def home(request):
         'appliance_summary': appliance_summary,
         'prediction': prediction, 
         'tomorrow': tomorrow,
+        'top_recs': top_recs, 
+        'rec_total': rec_total,
     })

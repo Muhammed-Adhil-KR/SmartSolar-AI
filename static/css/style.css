@@ -193,3 +193,20 @@ body.auth-body {
 .prediction-value span { font-size: 1rem; font-weight: 500; color: #065f46; }
 .chart-box { position: relative; height: 300px; }
 .alert { overflow-wrap: anywhere; }
+
+/* ---- Recommendation cards (Phase 12) ---- */
+.rec-card { background: #fff; border: 1px solid #e5e7eb; border-left-width: 5px; border-radius: 12px; padding: 1rem 1.1rem; }
+.rec-card.prio-critical { border-left-color: #b42318; }
+.rec-card.prio-high     { border-left-color: #b54708; }
+.rec-card.prio-medium   { border-left-color: #0e7490; }
+.rec-card.prio-low      { border-left-color: #475467; }
+.rec-title { font-weight: 600; }
+.rec-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600;
+             padding: .15rem .55rem; border-radius: 999px; }
+.rec-badge.prio-critical { background: #fef3f2; color: #b42318; }
+.rec-badge.prio-high     { background: #fffaeb; color: #93370d; }
+.rec-badge.prio-medium   { background: #ecfeff; color: #0e7490; }
+.rec-badge.prio-low      { background: #f2f4f7; color: #475467; }
+.rec-chip { font-size: .78rem; color: #475467; background: #f2f4f7; border-radius: 6px; padding: .1rem .5rem; }
+.advice-item { display: flex; gap: .75rem; align-items: flex-start; padding: .6rem 0; border-top: 1px solid #eef0f2; }
+.advice-item:first-child { border-top: 0; padding-top: 0; }

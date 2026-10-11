@@ -1,0 +1,15 @@
+<div class="rec-card prio-{{ rec.priority|lower }}">
+    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-1">
+        <div class="rec-title"><i class="bi {{ rec.type_icon }}"></i> {{ rec.title }}</div>
+        <span class="rec-badge prio-{{ rec.priority|lower }}">
+            <i class="bi {{ rec.priority_icon }}"></i> {{ rec.get_priority_display }}
+        </span>
+    </div>
+    <p class="mb-2">{{ rec.message }}</p>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="rec-chip">{{ rec.get_recommendation_type_display }}</span>
+        {% if rec.appliance %}<span class="rec-chip"><i class="bi bi-plug"></i> {{ rec.appliance.name }}</span>{% endif %}
+        {% if rec.estimated_energy_kwh is not None %}<span class="rec-chip"><i class="bi bi-lightning-charge"></i> {{ rec.estimated_energy_kwh|floatformat:1 }} kWh</span>{% endif %}
+        {% if rec.estimated_savings %}<span class="rec-chip"><i class="bi bi-cash-coin"></i> about {{ currency }}{{ rec.estimated_savings|floatformat:0 }}</span>{% endif %}
+    </div>
+</div>

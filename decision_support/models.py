@@ -1,6 +1,18 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Case, IntegerField, Value, When
 from django.utils import timezone
+
+
+class RecommendationQuerySet(models.QuerySet):
+    def by_priority(self):
+        """Most important first (CRITICAL, HIGH, MEDIUM, LOW), then in the order the rules created them."""
+        rank = Case(
+            When(priority='CRITICAL', then=Value(0)),
+            When(priority='HIGH', then=Value(1)),
+            When(priority='MEDIUM', then=Value(2)),
+            default=Value(3), output_field=IntegerField())
+        return self.annotate(priority_rank=rank).order_by('priority_rank', 'id')
 
 
 class Recommendation(models.Model):
@@ -31,6 +43,21 @@ class Recommendation(models.Model):
     CRITICAL = 'CRITICAL'
     PRIORITY_CHOICES = [(LOW, 'Low'), (MEDIUM, 'Medium'), (HIGH, 'High'), (CRITICAL, 'Critical')]
 
+    # --- Phase 12 presentation helpers (no database impact) ---
+    SUMMARY_TITLE = "Tomorrow's energy summary"     # rule R8's title; lets the UI tell the summary apart
+    BATTERY_TYPES = (BATTERY_CHARGE, BATTERY_RESERVE, BATTERY_DISCHARGE)
+    GRID_TYPES = (GRID_EXPORT, GRID_IMPORT)
+    TYPE_ICONS = {
+        APPLIANCE_SCHEDULE: 'bi-clock-history', BATTERY_CHARGE: 'bi-battery-charging',
+        BATTERY_RESERVE: 'bi-battery-half', BATTERY_DISCHARGE: 'bi-moon-stars',
+        GRID_EXPORT: 'bi-arrow-up-right-circle', GRID_IMPORT: 'bi-plug',
+        ENERGY_CONSERVATION: 'bi-pause-circle', GENERAL: 'bi-info-circle',
+    }
+    PRIORITY_ICONS = {
+        CRITICAL: 'bi-exclamation-octagon-fill', HIGH: 'bi-exclamation-triangle-fill',
+        MEDIUM: 'bi-exclamation-circle', LOW: 'bi-check-circle',
+    }
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
     # CASCADE: when a stale prediction is deleted, the advice built on it goes too.
     prediction = models.ForeignKey('forecast.Prediction', on_delete=models.CASCADE,
@@ -45,8 +72,30 @@ class Recommendation(models.Model):
     estimated_savings = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
+    objects = RecommendationQuerySet.as_manager()
+
     class Meta:
         ordering = ['-prediction__prediction_for_date', 'id']
+
+    @classmethod
+    def types_for(cls, system):
+        """Recommendation types that make sense for this system type (battery / grid gating)."""
+        allowed = []
+        for value, label in cls.TYPE_CHOICES:
+            if value in cls.BATTERY_TYPES and not system.needs_battery:
+                continue
+            if value in cls.GRID_TYPES and not system.needs_grid_config:
+                continue
+            allowed.append((value, label))
+        return allowed
+
+    @property
+    def type_icon(self):
+        return self.TYPE_ICONS.get(self.recommendation_type, 'bi-info-circle')
+
+    @property
+    def priority_icon(self):
+        return self.PRIORITY_ICONS.get(self.priority, 'bi-info-circle')
 
     def __str__(self):
         return f"{self.get_recommendation_type_display()}: {self.title}"
