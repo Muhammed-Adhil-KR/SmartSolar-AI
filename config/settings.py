@@ -94,8 +94,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'dashboard:home'
-LOGOUT_REDIRECT_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'dashboard:home'      # after login, land on the dashboard
+LOGOUT_REDIRECT_URL = 'dashboard:landing'  # after logout, go to the Home page
 
 GRID_EMISSION_FACTOR_KG_PER_KWH = float(
     os.environ.get("GRID_EMISSION_FACTOR_KG_PER_KWH", "0.72")

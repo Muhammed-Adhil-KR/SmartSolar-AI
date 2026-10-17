@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+{% block extra_css %}<link href="{% static 'css/home.css' %}" rel="stylesheet">{% endblock %}
+{% block content_wrapper_class %}p-0{% endblock %}
+
+{% block content %}
+
+{# ---------------- Hero ---------------- #}
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <span class="hero-chip"><i class="bi bi-sun-fill"></i> Solar decision support</span>
+        <h1>Know tomorrow's solar power <em>before</em> the sun comes up.</h1>
+        <p class="lead mt-3">
+          SmartSolar estimates how much electricity your solar system will produce tomorrow
+          and suggests when to run your appliances, charge your battery and use the grid.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          {% if user.is_authenticated %}
+            <a href="{% url 'dashboard:home' %}" class="btn btn-amber btn-lg px-4">Open dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+          {% else %}
+            <a href="{% url 'accounts:register' %}" class="btn btn-amber btn-lg px-4">Get started</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-4">Log in</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-card">
+          <div class="small text-uppercase fw-semibold" style="color:#ffe39a;letter-spacing:.06em">A typical day with SmartSolar</div>
+          <div class="row-item mt-2"><i class="bi bi-cloud-sun"></i> Checks tomorrow's weather at your location</div>
+          <div class="row-item"><i class="bi bi-graph-up-arrow"></i> Estimates your solar generation</div>
+          <div class="row-item"><i class="bi bi-plug"></i> Compares it with what your appliances need</div>
+          <div class="row-item"><i class="bi bi-lightbulb"></i> Tells you what to do about it</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ---------------- How it works ---------------- #}
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-eyebrow">How it works</div>
+    <h2 class="section-title">From your roof to a plan, in four steps</h2>
+    <p class="section-sub">Set things up once. After that, one click gives you tomorrow's estimate and advice.</p>
+    <div class="row g-3 mt-3">
+      {% for n, icon, title, text in steps %}
+      <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+          <div class="step-num">{{ n }}</div>
+          <h3 class="h6 fw-bold"><i class="bi {{ icon }} me-1 text-primary"></i>{{ title }}</h3>
+          <p class="text-muted small mb-0">{{ text }}</p>
+        </div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ---------------- Features ---------------- #}
+<section class="section section-alt" id="features">
+  <div class="container">
+    <div class="section-eyebrow">Features</div>
+    <h2 class="section-title">What you get</h2>
+    <div class="row g-3 mt-2">
+      {% for icon, warm, title, text in features %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100"><div class="card-body">
+          <div class="feature-icon {% if warm %}warm{% endif %}"><i class="bi {{ icon }}"></i></div>
+          <h3 class="h6 fw-bold">{{ title }}</h3>
+          <p class="text-muted small mb-0">{{ text }}</p>
+        </div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ---------------- System types ---------------- #}
+<section class="section" id="systems">
+  <div class="container">
+    <div class="section-eyebrow">Works with your setup</div>
+    <h2 class="section-title">On-grid, off-grid or hybrid</h2>
+    <p class="section-sub">The advice adapts to the kind of system you have.</p>
+    <div class="row g-3 mt-2">
+      <div class="col-md-4"><div class="card sys-card h-100"><div class="card-body">
+        <h3 class="h6 fw-bold"><i class="bi bi-lightning-charge me-1"></i>On-grid</h3>
+        <p class="text-muted small mb-0">Connected to the electricity grid. Advice covers when to use solar power directly and when exporting or importing makes sense.</p>
+      </div></div></div>
+      <div class="col-md-4"><div class="card sys-card s2 h-100"><div class="card-body">
+        <h3 class="h6 fw-bold"><i class="bi bi-battery-charging me-1"></i>Off-grid</h3>
+        <p class="text-muted small mb-0">Runs on solar and a battery. Advice protects your essential appliances and your battery reserve.</p>
+      </div></div></div>
+      <div class="col-md-4"><div class="card sys-card s3 h-100"><div class="card-body">
+        <h3 class="h6 fw-bold"><i class="bi bi-diagram-3 me-1"></i>Hybrid</h3>
+        <p class="text-muted small mb-0">Solar, battery and grid together. Advice balances all three to use as little grid power as possible.</p>
+      </div></div></div>
+    </div>
+  </div>
+</section>
+
+{# ---------------- FAQ ---------------- #}
+<section class="section section-alt" id="faq">
+  <div class="container" style="max-width:820px">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">Common questions</h2>
+    <div class="accordion mt-3" id="faqList">
+      {% for q, a in faqs %}
+      <div class="accordion-item">
+        <h3 class="accordion-header">
+          <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}">{{ q }}</button>
+        </h3>
+        <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#faqList">
+          <div class="accordion-body text-muted">{{ a }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="note-box mt-4">
+      <i class="bi bi-info-circle-fill fs-5"></i>
+      <div><strong>Please note:</strong> all figures in SmartSolar are estimates based on weather forecasts and a prediction model.
+      Real generation can be higher or lower. Use the advice as guidance, not a guarantee.</div>
+    </div>
+  </div>
+</section>
+
+{# ---------------- About & Contact ---------------- #}
+<section class="section" id="contact">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <div class="section-eyebrow">About &amp; Contact</div>
+        <h2 class="section-title">About this project</h2>
+        <p class="text-muted">
+          SmartSolar is an <strong>Intelligent Decision Support System for Solar Energy</strong>,
+          built as an academic mini project. It combines a machine-learning solar forecast with
+          a rule-based advisor to help households use solar energy better.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        {# Values come from the CONTACT dictionary in dashboard/views.py #}
+        <div class="card"><div class="card-body p-4">
+          <h3 class="h6 fw-bold mb-2">Get in touch</h3>
+          {% if contact.name %}<div class="contact-line"><i class="bi bi-person-circle"></i><div><strong>{{ contact.name }}</strong>{% if contact.role %}<div class="small text-muted">{{ contact.role }}</div>{% endif %}</div></div>{% endif %}
+          {% if contact.email %}<div class="contact-line"><i class="bi bi-envelope"></i><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></div>{% endif %}
+          {% if contact.course %}<div class="contact-line"><i class="bi bi-mortarboard"></i><span>{{ contact.course }}</span></div>{% endif %}
+          {% if contact.college %}<div class="contact-line"><i class="bi bi-building"></i><span>{{ contact.college }}</span></div>{% endif %}
+        </div></div>
+      </div>
+    </div>
+
+    {% if not user.is_authenticated %}
+    <div class="cta-band mt-5">
+      <h2 class="h3 fw-bold">Ready to plan tomorrow's solar day?</h2>
+      <p class="mb-3" style="color:rgba(255,255,255,.8)">Create a free account and set up your system in a few minutes.</p>
+      <a href="{% url 'accounts:register' %}" class="btn btn-amber btn-lg px-4">Get started</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

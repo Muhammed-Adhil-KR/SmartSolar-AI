@@ -2,13 +2,24 @@
 {% block title %}{% if mode == 'add' %}Add Appliance{% else %}Edit Appliance{% endif %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h4 class="mb-3">{% if mode == 'add' %}Add Appliance{% else %}Edit Appliance{% endif %}</h4>
+    <div class="col-md-7 col-lg-6">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">{% if mode == 'add' %}Add Appliance{% else %}Edit Appliance{% endif %}</h1>
                 {% if appliance %}
-                    <p class="text-muted small">Daily energy (auto-calculated): {{ appliance.daily_energy_kwh }} kWh</p>
+                    <p class="page-sub">Daily energy (auto-calculated): {{ appliance.daily_energy_kwh }} kWh</p>
+                {% else %}
+                    <p class="page-sub">Daily energy is calculated for you from power and hours of use.</p>
                 {% endif %}
+            </div>
+            <a href="{% url 'solar:appliance_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to appliances
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
                     {% for field in form %}
@@ -28,6 +39,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -47,5 +60,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-{% endblock %}
 {% endblock %}

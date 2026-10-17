@@ -1,0 +1,53 @@
+/* SmartSolar - public Home page (loaded only by landing.html) */
+.hero {
+  background: linear-gradient(135deg, #0b2e33 0%, #0e4a4a 100%);
+  color: #fff; padding: 4.5rem 0 5rem; position: relative; overflow: hidden;
+}
+.hero::after {
+  content: ""; position: absolute; right: -120px; top: -120px; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 201, 64, .35), rgba(255, 201, 64, 0) 68%);
+}
+.hero .container { position: relative; z-index: 1; }
+.hero h1 { font-size: clamp(2rem, 4.5vw, 3.1rem); font-weight: 800; line-height: 1.12; }
+.hero h1 em { font-style: normal; color: #ffc940; }
+.hero .lead { color: rgba(255, 255, 255, .8); max-width: 560px; }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .8rem; border-radius: 999px;
+  background: rgba(255, 255, 255, .1); color: #ffe39a; font-size: .85rem; font-weight: 600; margin-bottom: 1rem;
+}
+.hero-card {
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 18px; padding: 1.4rem;
+}
+.hero-card .row-item { display: flex; gap: .6rem; align-items: center; padding: .55rem 0; border-top: 1px solid rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .85); font-size: .92rem; }
+.hero-card .row-item:first-of-type { border-top: 0; }
+
+.section { padding: 4rem 0; }
+.section-alt { background: #fff; border-top: 1px solid var(--ss-line); border-bottom: 1px solid var(--ss-line); }
+.section-eyebrow { color: var(--ss-amber-ink); font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+.section-title { font-weight: 800; font-size: clamp(1.5rem, 3vw, 2rem); margin: .3rem 0 .5rem; }
+.section-sub { color: var(--ss-muted); max-width: 620px; }
+
+.step-num {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--ss-teal); color: #fff;
+  display: grid; place-items: center; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: .8rem;
+}
+.feature-icon {
+  width: 46px; height: 46px; border-radius: 12px; background: var(--ss-teal-soft); color: var(--ss-teal);
+  display: grid; place-items: center; font-size: 1.3rem; margin-bottom: .8rem;
+}
+.feature-icon.warm { background: var(--ss-amber-soft); color: var(--ss-amber-ink); }
+
+.sys-card { border-top: 4px solid var(--ss-teal); }
+.sys-card.s2 { border-top-color: var(--ss-amber); }
+.sys-card.s3 { border-top-color: #2f7d95; }
+
+.note-box {
+  background: var(--ss-amber-soft); border: 1px solid #f3d99a; border-radius: 14px;
+  padding: 1rem 1.2rem; color: #5c3b00; display: flex; gap: .8rem; align-items: flex-start;
+}
+.contact-line { display: flex; gap: .7rem; align-items: center; padding: .5rem 0; }
+.contact-line i { color: var(--ss-teal); font-size: 1.2rem; }
+.cta-band { background: linear-gradient(135deg, #0b2e33, #0e4a4a); color: #fff; border-radius: 20px; padding: 2.5rem 1.5rem; text-align: center; }
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 80px; }

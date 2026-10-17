@@ -455,3 +455,39 @@ def dashboard_recommendations(prediction, limit=3):
     qs = Rec.objects.filter(prediction=prediction)
     top = list(qs.exclude(title=Rec.SUMMARY_TITLE).by_priority()[:limit])
     return top, qs.count()
+
+def energy_split(user, prediction):
+    """
+    Data for the dashboard "how much of tomorrow's usage does the sun cover?" bar.
+    Returns None when it can't be shown (no prediction, or no active appliances).
+
+    solar_pct   share of expected usage covered by solar, capped at 100 for the bar
+    other_pct   the rest of the bar (what must come from battery and/or grid)
+    other_label "Battery", "Grid" or "Battery + grid", depending on the system type
+    spare_kwh   solar left over when generation exceeds usage (0 otherwise)
+    unmet_kwh   usage that nothing can cover (off-grid only)
+    """
+    if prediction is None:
+        return None
+    engine = _load_engine(user, prediction)
+    if not engine.appliances or engine.balance.demand <= 0:
+        return None
+    b, system = engine.balance, engine.system
+
+    solar_pct = min(b.coverage, 1.0) * 100
+    if system.needs_battery and system.needs_grid_config:
+        label = 'Battery + grid'
+    elif system.needs_battery:
+        label = 'Battery'
+    else:
+        label = 'Grid'
+    return {
+        'solar_pct': round(solar_pct),
+        'other_pct': 100 - round(solar_pct),
+        'other_label': label,
+        'coverage_pct': round(b.coverage * 100),
+        'demand_kwh': round(b.demand, 1),
+        'solar_kwh': round(min(b.generation, b.demand), 1),
+        'spare_kwh': round(b.surplus, 1),
+        'unmet_kwh': round(b.unmet, 1),
+    }

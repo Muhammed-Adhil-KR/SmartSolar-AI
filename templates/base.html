@@ -2,99 +2,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Solar DSS{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SmartSolar{% endblock %} · SmartSolar</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230f5c45'/><circle cx='32' cy='32' r='12' fill='%23ffb020'/><g stroke='%23ffb020' stroke-width='5' stroke-linecap='round'><path d='M32 8v7M32 49v7M8 32h7M49 32h7M15 15l5 5M44 44l5 5M49 15l-5 5M20 44l-5 5'/></g></svg>">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-    {% block extra_head %}{% endblock %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+  {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}app-body{% endblock %}">
+<body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock %}">
 
 {% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark app-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'dashboard:home' %}">
-            <span class="brand-sun"><i class="bi bi-brightness-high-fill"></i></span> Solar DSS
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:home' %}">Dashboard</a></li>
-                    <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Solar System</a>
-                    <ul class="dropdown-menu">
-                        {% if user_solar_system %}
-                            <li><a class="dropdown-item" href="{% url 'solar:edit_system' %}">System &amp; Location</a></li>
-                            {% if user_solar_system.needs_battery or user.battery %}
-                                <li><a class="dropdown-item" href="{% url 'solar:edit_battery' %}">Battery</a></li>
-                            {% endif %}
-                            {% if user_solar_system.needs_grid_config or user.gridconfiguration %}
-                                <li><a class="dropdown-item" href="{% url 'solar:edit_grid' %}">Grid</a></li>
-                            {% endif %}
-                        {% else %}
-                            <li><a class="dropdown-item" href="{% url 'solar:setup_system' %}">Set up solar system</a></li>
-                        {% endif %}
-                    </ul>
-                </li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'solar:appliance_list' %}">Appliances</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'forecast:prediction_history' %}">Predictions</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'decision_support:current' %}">Recommendations</a></li>
-            </ul>
-            <ul class="navbar-nav align-items-lg-center">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link user-chip" href="{% url 'accounts:profile' %}">
-                            <i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-logout">Logout</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
-                    <li class="nav-item"><a class="btn btn-nav-cta ms-lg-2" href="{% url 'accounts:register' %}">Get Started</a></li>
-                {% endif %}
-            </ul>
+{% with rm=request.resolver_match %}
+<nav class="navbar navbar-expand-lg ss-navbar sticky-top" data-bs-theme="dark">
+  <div class="container">
+
+   <a class="ss-brand" href="{% url 'dashboard:landing' %}" aria-label="SmartSolar home">
+      <span class="ss-mark"><i class="bi bi-sun-fill"></i></span>
+      <span class="brand-name">Smart<span>Solar</span></span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#ssMenu" aria-controls="ssMenu" aria-label="Open menu">
+      <i class="bi bi-list fs-2"></i>
+    </button>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="ssMenu" aria-labelledby="ssMenuLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="ssMenuLabel">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body align-items-lg-center">
+
+        {% if user.is_authenticated %}
+        <ul class="navbar-nav mx-lg-auto gap-lg-1">
+          <li class="nav-item">
+            <a class="nav-link {% if rm.url_name == 'home' %}active{% endif %}" href="{% url 'dashboard:home' %}">
+              <i class="bi bi-grid-1x2 me-1"></i>Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if rm.namespace == 'solar' and 'appliance' in rm.url_name %}active{% endif %}" href="{% url 'solar:appliance_list' %}">
+              <i class="bi bi-plug me-1"></i>Appliances</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if rm.namespace == 'forecast' %}active{% endif %}" href="{% url 'forecast:prediction_history' %}">
+              <i class="bi bi-graph-up-arrow me-1"></i>Predictions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if rm.namespace == 'decision_support' %}active{% endif %}" href="{% url 'decision_support:current' %}">
+              <i class="bi bi-lightbulb me-1"></i>Recommendations</a>
+          </li>
+        </ul>
+
+        <div class="dropdown mt-3 mt-lg-0">
+          <button class="ss-usermenu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="ss-avatar">{{ user.username|slice:":2" }}</span>
+            <span class="d-none d-sm-inline fw-semibold">{{ user.username }}</span>
+            <i class="bi bi-chevron-down small"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-lg-end" data-bs-theme="light">
+            <li><h6 class="dropdown-header">Signed in as {{ user.username }}</h6></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">My solar setup</h6></li>
+            <li><a class="dropdown-item" href="{% url 'solar:edit_system' %}"><i class="bi bi-sun me-2"></i>Solar System</a></li>
+            {% if user.solarsystem.needs_battery %}
+            <li><a class="dropdown-item" href="{% url 'solar:edit_battery' %}"><i class="bi bi-battery-charging me-2"></i>Battery</a></li>
+            {% endif %}
+            {% if user.solarsystem.needs_grid_config %}
+            <li><a class="dropdown-item" href="{% url 'solar:edit_grid' %}"><i class="bi bi-lightning-charge me-2"></i>Grid</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
         </div>
-    </div>
-</nav>
-{% endblock %}
 
-<div class="{% block content_wrapper_class %}container-fluid mt-3{% endblock %}">
-    {% block messages_wrapper %}
-        {% if messages %}
-            <div class="container-fluid">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
+        {% else %}
+        <ul class="navbar-nav mx-lg-auto gap-lg-1">
+            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:landing' %}#how">How it works</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:landing' %}#features">Features</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:landing' %}#faq">FAQ</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:landing' %}#contact">Contact</a></li>
+        </ul>
+        <div class="d-flex gap-2 mt-3 mt-lg-0">
+          <a class="btn btn-outline-light" href="{% url 'accounts:login' %}">Log in</a>
+          <a class="btn btn-amber" href="{% url 'accounts:register' %}">Register</a>
+        </div>
         {% endif %}
-    {% endblock %}
 
-    {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</nav>
+{% endwith %}
+{% endblock navbar %}
+
+{% block messages_wrapper %}
+{% if messages %}
+<div class="ss-toasts" id="ssToasts" aria-live="polite">
+  {% for message in messages %}
+  <div class="ss-toast t-{{ message.tags|default:'info' }}" role="status">
+    <i class="bi {% if 'success' in message.tags %}bi-check-circle-fill text-success{% elif 'error' in message.tags or 'danger' in message.tags %}bi-x-circle-fill text-danger{% elif 'warning' in message.tags %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} mt-1"></i>
+    <div>{{ message }}</div>
+    <button type="button" class="ss-toast-x" aria-label="Dismiss">&times;</button>
+  </div>
+  {% endfor %}
 </div>
+{% endif %}
+{% endblock messages_wrapper %}
+
+<main class="flex-grow-1 {% block content_wrapper_class %}py-4{% endblock %}">
+  {% block content %}{% endblock %}
+</main>
 
 {% block footer %}
-<footer class="text-center text-muted small py-4 mt-5">
-    Intelligent Decision Support System for Solar Energy
+<footer class="ss-footer">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="ss-mark" style="width:26px;height:26px;border-radius:8px;font-size:.8rem"><i class="bi bi-sun-fill"></i></span>
+      <strong class="text-dark">SmartSolar</strong>
+      <span>· Solar decision support</span>
+    </div>
+    <div class="d-flex flex-wrap gap-3">
+      <a href="{% url 'dashboard:landing' %}">Home</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'decision_support:current' %}">Recommendations</a>
+      <a href="{% url 'forecast:prediction_history' %}">Predictions</a>
+      {% endif %}
+    </div>
+    <div><i class="bi bi-info-circle me-1"></i>All figures are estimates.</div>
+  </div>
 </footer>
-{% endblock %}
+{% endblock footer %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Flash messages: auto-fade after 6 s, or dismiss with the ×
+  document.querySelectorAll('.ss-toast').forEach(function (t) {
+    function hide() { t.classList.add('hiding'); setTimeout(function () { t.remove(); }, 300); }
+    t.querySelector('.ss-toast-x').addEventListener('click', hide);
+    setTimeout(hide, 6000);
+  });
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

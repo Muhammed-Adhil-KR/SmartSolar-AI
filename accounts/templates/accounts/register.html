@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Create Account - Solar DSS{% endblock %}
+{% block title %}Create Account{% endblock %}
 {% block body_class %}auth-body{% endblock %}
 {% block navbar %}{% endblock %}
 {% block content_wrapper_class %}auth-split{% endblock %}
@@ -8,11 +8,11 @@
 
 {% block content %}
 <div class="auth-side">
-    <div class="sun-icon"><i class="bi bi-brightness-high-fill"></i></div>
+    <div class="sun-icon"><i class="bi bi-sun-fill"></i></div>
     <h1>Take control of your<br>solar-powered home.</h1>
     <p class="lead-text">
-        Register your solar system and let the Intelligent Decision Support
-        System forecast tomorrow's generation and recommend how to use it.
+        Register your solar system and let SmartSolar forecast tomorrow's
+        generation and recommend how to use it.
     </p>
     <ul class="auth-feature-list">
         <li><i class="bi bi-cloud-sun"></i> Next-day generation predictions from real weather forecasts</li>
@@ -23,16 +23,16 @@
 
 <div class="auth-form-side">
     <div class="auth-card">
-        <div class="brand-row">
-            <i class="bi bi-brightness-high-fill"></i>
-            <span class="fw-bold">Solar DSS</span>
-        </div>
+        <a class="brand-row" href="{% url 'dashboard:landing' %}" aria-label="SmartSolar home">
+            <i class="bi bi-sun-fill"></i>
+            <span>SmartSolar</span>
+        </a>
         <h3>Create your account</h3>
         <p class="subtitle">Start with your details — solar system setup comes next.</p>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>
             {% endfor %}
         {% endif %}
 
