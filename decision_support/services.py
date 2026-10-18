@@ -34,6 +34,7 @@ RULES (each is marked R# in the code below)
     R8  Daily summary: coverage, savings, CO2 avoided.
     R9  No active appliances -> advisory only.
 """
+import logging
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -44,6 +45,8 @@ from forecast.models import Prediction
 from forecast.solar_window import get_solar_window
 from solar.models import Appliance, Battery, GridConfiguration
 from .models import Recommendation as Rec
+
+logger = logging.getLogger(__name__)
 
 
 class DecisionSupportError(Exception):
@@ -425,6 +428,30 @@ def generate_recommendations(user, prediction=None, window=None):
     if window is None:
         window = get_solar_window(user.solarsystem, prediction.prediction_for_date)
     return _load_engine(user, prediction, window).run()
+
+
+def refresh_open_recommendations(user, window=None):
+    """
+    Rebuild the advice for every OPEN day (a prediction dated today or later) so it
+    matches the user's current appliances, battery, grid and system type. Past days
+    are never touched, so they stay as history.
+
+    Called by the settings views right after a successful save. It never raises
+    (a failure here must not undo or block the user's save). Returns how many
+    recommendations were written; 0 if there was nothing to rebuild.
+    """
+    try:
+        if getattr(user, 'solarsystem', None) is None:
+            return 0
+        open_predictions = Prediction.objects.filter(
+            user=user, prediction_for_date__gte=date.today()).order_by('prediction_for_date')
+        total = 0
+        for prediction in open_predictions:
+            total += len(generate_recommendations(user, prediction, window=window))
+        return total
+    except Exception:
+        logger.exception("Could not refresh recommendations for user %s", getattr(user, 'pk', None))
+        return 0
 
 
 # ---------------------------------------------------------------- reading helpers for the UI

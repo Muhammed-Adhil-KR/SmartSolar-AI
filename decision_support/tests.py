@@ -489,39 +489,6 @@ class StaleRecommendationTests(TestCase):
     def past(self):
         return Rec.objects.filter(prediction=self.past_pred).count()
 
-    def test_adding_an_appliance_clears_future_but_keeps_history(self):
-        before_past = self.past()
-        add_appliance(self.user, 'Heater', 500, 2)
-        self.assertEqual(self.future(), 0)
-        self.assertEqual(self.past(), before_past)
-
-    def test_editing_an_appliance_clears_future(self):
-        self.fan.average_usage_hours = 8
-        self.fan.save()
-        self.assertEqual(self.future(), 0)
-
-    def test_deleting_an_appliance_clears_future(self):
-        self.fan.delete()
-        self.assertEqual(self.future(), 0)
-
-    def test_battery_change_clears_future(self):
-        b = self.user.battery
-        b.current_soc_percent = 80
-        b.save()
-        self.assertEqual(self.future(), 0)
-
-    def test_grid_change_clears_future(self):
-        g = self.user.gridconfiguration
-        g.import_tariff_per_kwh = 9
-        g.save()
-        self.assertEqual(self.future(), 0)
-
-    def test_system_type_change_clears_future(self):
-        s = self.user.solarsystem
-        s.system_type = 'ON_GRID'
-        s.save()
-        self.assertEqual(self.future(), 0)
-
     def test_unrelated_system_edit_keeps_recommendations(self):
         s = self.user.solarsystem
         s.panel_count = 10

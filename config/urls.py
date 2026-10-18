@@ -9,3 +9,7 @@ urlpatterns = [
     path('recommendations/', include('decision_support.urls', namespace='decision_support')),
     path('', include('dashboard.urls', namespace='dashboard')),
 ]
+
+admin.site.site_header = "SmartSolar Administration"
+admin.site.site_title = "SmartSolar Admin"
+admin.site.index_title = "Manage SmartSolar"

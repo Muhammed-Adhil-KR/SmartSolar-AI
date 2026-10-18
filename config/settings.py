@@ -131,3 +131,6 @@ DSS_MIN_USEFUL_GENERATION_KWH = 1.0    # below this predicted generation, skip s
 DSS_LOW_COVERAGE_RATIO = 0.5           # "poor day": generation below 50% of expected usage
 DSS_LOW_BATTERY_SOC_PERCENT = 50       # "low battery": charge below 50%
 DSS_MAX_SCHEDULE_RECOMMENDATIONS = 5   # at most 5 appliance-scheduling tips per day
+
+# Fast, offline test runs (see config/test_runner.py)
+TEST_RUNNER = 'config.test_runner.OfflineTestRunner'

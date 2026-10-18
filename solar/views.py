@@ -8,6 +8,14 @@ from .decorators import next_setup_step
 from django.db.models import Case, When, Value, IntegerField, Sum
 from django.core.paginator import Paginator
 
+from decision_support.services import refresh_open_recommendations
+
+
+def _refresh_advice(request):
+    """Rebuild today's and tomorrow's advice after a settings change (never blocks the save)."""
+    if refresh_open_recommendations(request.user):
+        messages.info(request, "Your recommendations were updated to match this change.")
+
 
 def build_step_context(system, current_key):
     """
@@ -115,6 +123,7 @@ def edit_system(request):
     instance = getattr(request.user, 'solarsystem', None)
     if not instance:
         return redirect('solar:setup_system')
+    old_type = instance.system_type
 
     if request.method == 'POST':
         form = SolarSystemForm(request.POST, instance=instance)
@@ -125,6 +134,8 @@ def edit_system(request):
             removed = sync_system_dependencies(request.user, system)
             if removed:
                 messages.info(request, f"Removed no-longer-applicable settings: {', '.join(removed)}.")
+            if system.system_type != old_type:
+                _refresh_advice(request)
             next_step = next_setup_step(request.user)
             if next_step:
                 messages.info(request, "Your new system type needs a bit more information.")
@@ -149,6 +160,7 @@ def setup_battery(request):
             battery = form.save(commit=False)
             battery.user = request.user
             battery.save()
+            _refresh_advice(request)
             return redirect(next_setup_step(request.user) or 'dashboard:home')
     else:
         form = BatteryForm(instance=instance)
@@ -170,6 +182,7 @@ def setup_grid(request):
             grid = form.save(commit=False)
             grid.user = request.user
             grid.save()
+            _refresh_advice(request)
             return redirect(next_setup_step(request.user) or 'dashboard:home')
     else:
         form = GridConfigurationForm(instance=instance)
@@ -189,6 +202,7 @@ def edit_battery(request):
             battery = form.save(commit=False)
             battery.user = request.user
             battery.save()
+            _refresh_advice(request)
             messages.success(request, "Battery details updated.")
             return redirect('dashboard:home')
     else:
@@ -205,6 +219,7 @@ def edit_grid(request):
             grid = form.save(commit=False)
             grid.user = request.user
             grid.save()
+            _refresh_advice(request)
             messages.success(request, "Grid configuration updated.")
             return redirect('dashboard:home')
     else:
@@ -300,6 +315,7 @@ def appliance_add(request):
             appliance.user = request.user
             appliance.save()
             messages.success(request, f"'{appliance.name}' added successfully.")
+            _refresh_advice(request)
             return redirect('solar:appliance_list')
     else:
         form = ApplianceForm()
@@ -316,6 +332,7 @@ def appliance_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"'{appliance.name}' updated.")
+            _refresh_advice(request)
             return redirect('solar:appliance_list')
     else:
         form = ApplianceForm(instance=appliance)
@@ -329,6 +346,7 @@ def appliance_toggle_active(request, pk):
     appliance.save()
     status = "reactivated" if appliance.is_active else "deactivated"
     messages.success(request, f"'{appliance.name}' {status}.")
+    _refresh_advice(request)
     return redirect('solar:appliance_list')
 
 
@@ -339,5 +357,6 @@ def appliance_delete(request, pk):
         name = appliance.name
         appliance.delete()
         messages.success(request, f"'{name}' permanently deleted.")
+        _refresh_advice(request)
         return redirect('solar:appliance_list')
     return render(request, 'solar/appliance_confirm_delete.html', {'appliance': appliance})
