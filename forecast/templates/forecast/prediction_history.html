@@ -1,71 +1,76 @@
 {% extends 'base.html' %}
 {% block title %}Predictions{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <div>
-    <h2 class="mb-0">Prediction History</h2>
-    <p class="text-muted mb-0">Estimated daily solar generation. Values are model estimates, not measurements.</p>
-  </div>
-  <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary btn-sm">Back to dashboard</a>
-</div>
+<div class="container-xl pb-4">
 
-{% if page.object_list %}
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 class="card-title">Predicted generation, last {{ chart.values|length }} days</h5>
-      <div class="chart-box">
-        <canvas id="historyChart" role="img"
-                aria-label="Bar chart of predicted daily solar generation in kWh. The table below lists the same values."></canvas>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 mb-3">
+    <div>
+      <h3 class="mb-0">Prediction History</h3>
+      <p class="text-muted small mb-0">Estimated daily solar generation. Values are model estimates, not measurements.</p>
+    </div>
+    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Dashboard</a>
+  </div>
+
+  {% if page.object_list %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="mb-2">Predicted generation, last {{ chart.values|length }} days</h6>
+        <div class="chart-box" style="height: 220px;">
+          <canvas id="historyChart" role="img"
+                  aria-label="Bar chart of predicted daily solar generation in kWh. The table below lists the same values."></canvas>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead>
-          <tr>
-            <th>For date</th><th class="text-end">Generation (kWh)</th><th class="text-end">System (kW)</th>
-            <th>Weather used</th><th>Generated</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for p in page %}
-          <tr>
-            <td>{{ p.prediction_for_date|date:"D, d M Y" }}</td>
-            <td class="text-end fw-semibold">{{ p.predicted_generation_kwh }}</td>
-            <td class="text-end">{{ p.capacity_kw_used }}</td>
-            <td class="small text-muted">
-              {% if p.weather_data %}
-                {{ p.weather_data.temperature_c|floatformat:1 }}&deg;C &middot;
-                {{ p.weather_data.rainfall_mm|floatformat:1 }} mm rain &middot;
-                {{ p.weather_data.solar_irradiance_kwhm2|floatformat:2 }} kWh/m&sup2;
-              {% else %}&mdash;{% endif %}
-            </td>
-            <td class="small text-muted">{{ p.created_at|date:"d M Y, H:i" }}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>For date</th><th class="text-end">kWh</th><th class="text-end">System (kW)</th>
+              <th>Weather used</th><th>Generated</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for p in page %}
+            <tr>
+              <td>{{ p.prediction_for_date|date:"D, d M Y" }}</td>
+              <td class="text-end fw-semibold" style="color: var(--ss-teal);">{{ p.predicted_generation_kwh }}</td>
+              <td class="text-end">{{ p.capacity_kw_used }}</td>
+              <td class="small text-muted">
+                {% if p.weather_data %}
+                  {{ p.weather_data.temperature_c|floatformat:1 }}&deg;C &middot;
+                  {{ p.weather_data.rainfall_mm|floatformat:1 }} mm &middot;
+                  {{ p.weather_data.solar_irradiance_kwhm2|floatformat:2 }} kWh/m&sup2;
+                {% else %}&mdash;{% endif %}
+              </td>
+              <td class="small text-muted">{{ p.created_at|date:"d M, H:i" }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  {% if page.has_other_pages %}
-  <nav class="mt-3" aria-label="Prediction pages">
-    <ul class="pagination justify-content-center">
-      {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}">Previous</a></li>{% endif %}
-      <li class="page-item disabled"><span class="page-link">Page {{ page.number }} of {{ page.paginator.num_pages }}</span></li>
-      {% if page.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}">Next</a></li>{% endif %}
-    </ul>
-  </nav>
+    {% if page.has_other_pages %}
+    <nav class="mt-3" aria-label="Prediction pages">
+      <ul class="pagination pagination-sm justify-content-center">
+        {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}">Previous</a></li>{% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page.number }} of {{ page.paginator.num_pages }}</span></li>
+        {% if page.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}">Next</a></li>{% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  {% else %}
+    <div class="card"><div class="card-body empty-state">
+      <i class="bi bi-graph-up"></i>
+      <p class="mb-1 fw-semibold text-white">No predictions yet</p>
+      <p class="small">Go to the dashboard and click <strong>Generate Prediction</strong>.</p>
+      <a href="{% url 'dashboard:home' %}" class="btn btn-success btn-sm">Go to dashboard</a>
+    </div></div>
   {% endif %}
-{% else %}
-  <div class="card"><div class="card-body text-center py-5">
-    <p class="mb-2">No predictions yet.</p>
-    <p class="text-muted small">Go to the dashboard and click <strong>Generate Prediction</strong>.</p>
-    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Go to dashboard</a>
-  </div></div>
-{% endif %}
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -76,20 +81,32 @@
   (function () {
     var data = JSON.parse(document.getElementById('chart-data').textContent);
     var css = getComputedStyle(document.documentElement);
-    var bar = (css.getPropertyValue('--bs-success') || '#059669').trim() || '#059669';
+    var teal = (css.getPropertyValue('--ss-teal') || '#3cc7bd').trim();
+    var text = (css.getPropertyValue('--ss-muted') || '#b4cdd0').trim();
+    var grid = 'rgba(255, 255, 255, 0.08)';
+
+    Chart.defaults.color = text;
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
     new Chart(document.getElementById('historyChart'), {
       type: 'bar',
       data: { labels: data.labels, datasets: [{
         label: 'Predicted generation (kWh)', data: data.values,
-        backgroundColor: bar, borderRadius: { topLeft: 4, topRight: 4 }, maxBarThickness: 36 }] },
+        backgroundColor: teal, borderRadius: { topLeft: 4, topRight: 4 }, maxBarThickness: 32 }] },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false },
-                   tooltip: { callbacks: { label: function (c) { return c.parsed.y + ' kWh'; } } } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0b2e33', borderColor: '#1f3b40', borderWidth: 1,
+            titleColor: '#ffffff', bodyColor: '#ffffff',
+            callbacks: { label: function (c) { return c.parsed.y + ' kWh'; } }
+          }
+        },
         scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, title: { display: true, text: 'kWh' },
-               grid: { color: 'rgba(128,128,128,0.15)' } }
+          x: { grid: { display: false }, border: { color: grid } },
+          y: { beginAtZero: true, title: { display: true, text: 'kWh', color: text },
+               grid: { color: grid }, border: { display: false } }
         }
       }
     });

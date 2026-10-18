@@ -27,8 +27,8 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
-class CustomLoginView(LoginView):
-    template_name = 'accounts/login.html'
+# class CustomLoginView(LoginView):
+#     template_name = 'accounts/login.html'
 
 
 class CustomLogoutView(LogoutView):

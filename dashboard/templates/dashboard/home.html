@@ -119,33 +119,49 @@
             </div>
         </div>
 
-        <!-- Current Weather -->
+                <!-- Current Weather -->
         <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-body">
+            <div class="card card-weather h-100">
+                <div class="card-body d-flex flex-column">
                     <h5 class="mb-1"><i class="bi bi-cloud-sun-fill" style="color: var(--amber-600);"></i> Current Weather</h5>
                     {% if current_weather %}
                         <p class="text-muted small mb-3">
-                            Model estimate (Open-Meteo) &middot; Updated {{ current_weather.fetched_at|time:"H:i" }}
+                            <i class="bi bi-geo-alt"></i> {{ system.location_name|default:"Your location" }}
+                            &middot; Updated {{ current_weather.fetched_at|time:"H:i" }}
                         </p>
-                        <div class="display-6 fw-bold">{{ current_weather.temperature_c|floatformat:1 }}°C</div>
-                        <div class="text-muted mb-3">{{ current_weather.condition }}</div>
-                        <div class="row g-2 text-center">
-                            <div class="col-4"><div class="stat-tile">
-                                <i class="bi bi-droplet"></i>
-                                <div class="stat-value">{{ current_weather.humidity_percent|floatformat:0 }}%</div>
-                                <div class="stat-label">Humidity</div>
-                            </div></div>
-                            <div class="col-4"><div class="stat-tile">
-                                <i class="bi bi-wind"></i>
-                                <div class="stat-value">{{ current_weather.wind_speed_mps|floatformat:1 }} m/s</div>
-                                <div class="stat-label">Wind</div>
-                            </div></div>
-                            <div class="col-4"><div class="stat-tile">
-                                <i class="bi bi-cloud-rain"></i>
-                                <div class="stat-value">{{ current_weather.rainfall_mm|floatformat:1 }} mm</div>
-                                <div class="stat-label">Rainfall</div>
-                            </div></div>
+
+                        <div class="wx-body">
+                        <div class="wx-top">
+                            <div class="wx-icon"><i class="bi {{ weather_info.icon }}"></i></div>
+                            <div>
+                                <div class="wx-temp">{{ current_weather.temperature_c|floatformat:1 }}°C</div>
+                                <div class="wx-cond">{{ current_weather.condition|default:"Current conditions" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="wx-grid">
+                            <div class="wx-metric"><i class="bi bi-droplet"></i>
+                                <div><b>{{ current_weather.humidity_percent|floatformat:0 }}%</b><span>Humidity</span></div></div>
+                            <div class="wx-metric"><i class="bi bi-wind"></i>
+                                <div><b>{{ current_weather.wind_speed_mps|floatformat:1 }} m/s</b><span>Wind</span></div></div>
+                            <div class="wx-metric"><i class="bi bi-cloud-rain"></i>
+                                <div><b>{{ current_weather.rainfall_mm|floatformat:1 }} mm</b><span>Rainfall</span></div></div>
+                            {% if current_weather.solar_irradiance_kwhm2 is not None %}
+                            <div class="wx-metric"><i class="bi bi-brightness-high"></i>
+                                <div><b>{{ current_weather.solar_irradiance_kwhm2|floatformat:2 }} kWh/m²</b><span>Solar irradiance</span></div></div>
+                            {% endif %}
+                        </div>
+
+                        {% if weather_info.label %}
+                        <div class="wx-outlook tone-{{ weather_info.tone }}">
+                            <div class="row1">
+                                <span class="label"><i class="bi bi-sun me-1"></i>Sunshine outlook right now</span>
+                                <span class="level">{{ weather_info.label }}</span>
+                            </div>
+                            <div class="wx-meter"><i style="width: {{ weather_info.level }}%"></i></div>
+                            <p class="wx-note">{{ weather_info.note }}</p>
+                        </div>
+                        {% endif %}
                         </div>
                     {% else %}
                         <div class="alert alert-warning mt-3 mb-0">{{ current_error }}</div>

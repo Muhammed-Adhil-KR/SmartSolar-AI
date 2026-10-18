@@ -23,13 +23,14 @@
 .hero-card .row-item:first-of-type { border-top: 0; }
 
 .section { padding: 4rem 0; }
-.section-alt { background: #fff; border-top: 1px solid var(--ss-line); border-bottom: 1px solid var(--ss-line); }
+.section-alt { background: #0d2226; border-top: 1px solid var(--ss-line); border-bottom: 1px solid var(--ss-line); }
+
 .section-eyebrow { color: var(--ss-amber-ink); font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
 .section-title { font-weight: 800; font-size: clamp(1.5rem, 3vw, 2rem); margin: .3rem 0 .5rem; }
 .section-sub { color: var(--ss-muted); max-width: 620px; }
 
 .step-num {
-  width: 38px; height: 38px; border-radius: 50%; background: var(--ss-teal); color: #fff;
+  width: 38px; height: 38px; border-radius: 50%; background: var(--ss-teal); color: var(--ss-on-teal);
   display: grid; place-items: center; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: .8rem;
 }
 .feature-icon {
@@ -43,8 +44,8 @@
 .sys-card.s3 { border-top-color: #2f7d95; }
 
 .note-box {
-  background: var(--ss-amber-soft); border: 1px solid #f3d99a; border-radius: 14px;
-  padding: 1rem 1.2rem; color: #5c3b00; display: flex; gap: .8rem; align-items: flex-start;
+  background: rgba(255, 176, 32, .1); border: 1px solid rgba(255, 176, 32, .3); border-radius: 14px;
+  padding: 1rem 1.2rem; color: #ffd98a; display: flex; gap: .8rem; align-items: flex-start;
 }
 .contact-line { display: flex; gap: .7rem; align-items: center; padding: .5rem 0; }
 .contact-line i { color: var(--ss-teal); font-size: 1.2rem; }

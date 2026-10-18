@@ -10,7 +10,7 @@
 
     {% include "decision_support/_tabs.html" with active="history" %}
 
-    <form method="get" class="card card-body mb-3">
+        <form method="get" class="card card-body mb-3 filter-bar">
         {% if form.non_field_errors %}
             <div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>
         {% endif %}

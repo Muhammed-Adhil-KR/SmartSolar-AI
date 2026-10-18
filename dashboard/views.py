@@ -14,6 +14,7 @@ from forecast.services import (
 from solar.decorators import setup_required
 from solar.models import Appliance, Battery
 from decision_support.services import dashboard_recommendations, energy_split
+from .weather_view import describe_weather
 
 logger = logging.getLogger(__name__)
 
@@ -125,4 +126,5 @@ def home(request):
         'top_recs': top_recs, 
         'rec_total': rec_total,
         'split': split,
+        'weather_info': describe_weather(current_weather),
     })
