@@ -7,6 +7,7 @@ urlpatterns = [
     path('solar/', include('solar.urls', namespace='solar')),
     path('forecast/', include('forecast.urls', namespace='forecast')),
     path('recommendations/', include('decision_support.urls', namespace='decision_support')),
+    path('manage/', include('adminpanel.urls')),
     path('', include('dashboard.urls', namespace='dashboard')),
 ]
 

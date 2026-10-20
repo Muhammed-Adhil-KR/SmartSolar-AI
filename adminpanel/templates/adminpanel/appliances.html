@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Appliances · Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <h1 class="h3 mb-0">Admin panel</h1>
+    <span class="badge text-bg-warning">Staff only</span>
+  </div>
+  <p class="text-secondary mb-3"></p>
+
+  {% include 'adminpanel/_tabs.html' %}
+
+  {% if owner %}
+  <div class="alert alert-info d-flex justify-content-between align-items-center py-2">
+    <span><i class="bi bi-funnel me-1"></i>Showing appliances of <strong>{{ owner.username }}</strong></span>
+    <a href="{% url 'adminpanel:appliances' %}" class="alert-link">Show all</a>
+  </div>
+  {% endif %}
+
+  <form method="get" class="row g-2 mb-3 align-items-end">
+    {% if owner %}<input type="hidden" name="user" value="{{ owner.pk }}">{% endif %}
+    <div class="col-md-5">
+      <label class="form-label" for="id_q">Search</label>
+      <input type="text" name="q" id="id_q" class="form-control" value="{{ form.q.value|default:'' }}" placeholder="Appliance, category or owner">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_priority">Priority</label>
+      <select name="priority" id="id_priority" class="form-select">
+        {% for value, label in form.fields.priority.choices %}
+        <option value="{{ value }}" {% if form.priority.value == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_status">Status</label>
+      <select name="status" id="id_status" class="form-select">
+        {% for value, label in form.fields.status.choices %}
+        <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-amber" type="submit"><i class="bi bi-search"></i> Search</button>
+      <a class="btn btn-outline-light" href="{% url 'adminpanel:appliances' %}">Clear</a>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="text-secondary small mb-2">{{ page.paginator.count }} appliance{{ page.paginator.count|pluralize }}</div>
+      {% if page.object_list %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Owner</th><th>Appliance</th><th>Usage</th><th>Priority</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for a in page %}
+            <tr>
+              <td><a href="{% url 'adminpanel:user_detail' a.user.pk %}">{{ a.user.username }}</a></td>
+              <td>
+                <div class="fw-semibold">{{ a.name }}</div>
+                <div class="small text-secondary">{{ a.category }}{% if a.is_shiftable %} · shiftable{% endif %}</div>
+              </td>
+              <td class="small">{{ a.rated_power_w|floatformat:"-1" }} W × {{ a.average_usage_hours|floatformat:"-1" }} h<br>
+                <span class="text-secondary">{{ a.daily_energy_kwh|floatformat:"-2" }} kWh/day</span></td>
+              <td>
+                {% if a.priority == 'CRITICAL' %}<span class="badge text-bg-danger">Critical</span>
+                {% elif a.priority == 'HIGH' %}<span class="badge text-bg-warning">High</span>
+                {% elif a.priority == 'MEDIUM' %}<span class="badge text-bg-info">Medium</span>
+                {% else %}<span class="badge text-bg-secondary">Low</span>{% endif %}
+              </td>
+              <td>{% if a.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-1">
+                  <form method="post" action="{% url 'adminpanel:appliance_toggle' a.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ current_path }}">
+                    {% if a.is_active %}
+                    <button class="btn btn-sm btn-outline-warning" type="submit" title="Deactivate"><i class="bi bi-pause-circle"></i></button>
+                    {% else %}
+                    <button class="btn btn-sm btn-outline-success" type="submit" title="Activate"><i class="bi bi-play-circle"></i></button>
+                    {% endif %}
+                  </form>
+                  <a class="btn btn-sm btn-outline-danger" title="Delete"
+                     href="{% url 'adminpanel:appliance_delete' a.pk %}?next={{ current_path|urlencode }}"><i class="bi bi-trash"></i></a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-secondary mb-0">No appliances match these filters.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include 'adminpanel/_pagination.html' %}
+</div>
+{% endblock %}

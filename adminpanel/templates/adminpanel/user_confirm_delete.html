@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ target.username }} · Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px">
+  <div class="card border-danger"><div class="card-body">
+    <h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle"></i> Delete {{ target.username }}?</h1>
+    <p>This permanently removes the account and everything below. It cannot be undone.</p>
+    <ul>
+      {% if summary.has_system %}<li>Solar system{% if summary.has_battery %}, battery{% endif %}{% if summary.has_grid %}, grid settings{% endif %}</li>{% endif %}
+      <li>{{ summary.appliances }} appliance{{ summary.appliances|pluralize }}</li>
+      <li>{{ summary.weather }} weather record{{ summary.weather|pluralize }}</li>
+      <li>{{ summary.predictions }} prediction{{ summary.predictions|pluralize }}</li>
+      <li>{{ summary.recommendations }} recommendation{{ summary.recommendations|pluralize }}</li>
+    </ul>
+    <p class="small text-secondary">If you only want to stop them logging in, deactivate the account instead.</p>
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, delete permanently</button>
+      <a class="btn btn-outline-light" href="{% url 'adminpanel:user_detail' target.pk %}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

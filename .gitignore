@@ -11,6 +11,7 @@ db.sqlite3
 staticfiles/
 media/
 *.log
+test_log.txt
 
 # Environment variables
 .env

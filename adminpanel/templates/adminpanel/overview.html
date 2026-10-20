@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Admin overview{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <h1 class="h3 mb-0">Admin panel</h1>
+    <span class="badge text-bg-warning">Staff only</span>
+  </div>
+  <p class="text-secondary mb-3"></p>
+
+  {% include 'adminpanel/_tabs.html' %}
+
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-secondary small">Users</div>
+        <div class="display-6 fw-bold">{{ stats.users_total }}</div>
+        <div class="small text-secondary">{{ stats.users_active }} active · {{ stats.users_new_week }} new this week</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-secondary small">Solar systems</div>
+        <div class="display-6 fw-bold">{{ stats.systems_total }}</div>
+        <div class="small text-secondary">{{ stats.staff_total }} staff account{{ stats.staff_total|pluralize }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-secondary small">Appliances</div>
+        <div class="display-6 fw-bold">{{ stats.appliances_total }}</div>
+        <div class="small text-secondary">{{ stats.appliances_active }} active</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-secondary small">Predictions · Recommendations</div>
+        <div class="display-6 fw-bold">{{ stats.predictions_total }} <span class="fs-5 text-secondary">· {{ stats.recommendations_total }}</span></div>
+        <div class="small text-secondary">stored across all users</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3">Predictions per day (last 14 days)</h2>
+        <div style="height:240px"><canvas id="predChart"></canvas></div>
+      </div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3">Systems by type</h2>
+        {% if stats.systems_by_type %}
+        <div style="height:240px"><canvas id="typeChart"></canvas></div>
+        {% else %}
+        <p class="text-secondary mb-0">No systems set up yet.</p>
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3">Newest users</h2>
+        {% for u in stats.recent_users %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span><i class="bi bi-person me-1"></i>{{ u.username }}</span>
+          <span class="text-secondary small">{{ u.date_joined|date:"d M Y, H:i" }}</span>
+        </div>
+        {% empty %}
+        <p class="text-secondary mb-0">No users yet.</p>
+        {% endfor %}
+      </div></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3">Latest predictions</h2>
+        {% for p in stats.recent_predictions %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span><i class="bi bi-graph-up-arrow me-1"></i>{{ p.user.username }} · {{ p.predicted_generation_kwh }} kWh</span>
+          <span class="text-secondary small">for {{ p.prediction_for_date|date:"d M" }}</span>
+        </div>
+        {% empty %}
+        <p class="text-secondary mb-0">No predictions yet.</p>
+        {% endfor %}
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ stats.predictions_chart|json_script:"pred-data" }}
+{{ stats.systems_by_type|json_script:"type-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  Chart.defaults.color = '#c9d6d6';
+  Chart.defaults.borderColor = 'rgba(255,255,255,.08)';
+
+  var pred = JSON.parse(document.getElementById('pred-data').textContent);
+  new Chart(document.getElementById('predChart'), {
+    type: 'bar',
+    data: { labels: pred.labels, datasets: [{ data: pred.values, backgroundColor: '#2dd4bf', borderRadius: 4 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false } },
+               scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+
+  var types = JSON.parse(document.getElementById('type-data').textContent);
+  var typeCanvas = document.getElementById('typeChart');
+  if (typeCanvas) {
+    new Chart(typeCanvas, {
+      type: 'doughnut',
+      data: { labels: types.map(function (t) { return t.label; }),
+              datasets: [{ data: types.map(function (t) { return t.count; }),
+                           backgroundColor: ['#2dd4bf', '#fbbf24', '#60a5fa'], borderWidth: 0 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+</script>
+{% endblock %}

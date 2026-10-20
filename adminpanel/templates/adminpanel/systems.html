@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Systems · Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <h1 class="h3 mb-0">Admin panel</h1>
+    <span class="badge text-bg-warning">Staff only</span>
+  </div>
+  <p class="text-secondary mb-3"></p>
+
+  {% include 'adminpanel/_tabs.html' %}
+
+  <form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label" for="id_q">Search</label>
+      <input type="text" name="q" id="id_q" class="form-control" value="{{ form.q.value|default:'' }}" placeholder="Owner or location">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="id_system_type">Type</label>
+      <select name="system_type" id="id_system_type" class="form-select">
+        {% for value, label in form.fields.system_type.choices %}
+        <option value="{{ value }}" {% if form.system_type.value == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-amber" type="submit"><i class="bi bi-search"></i> Search</button>
+      <a class="btn btn-outline-light" href="{% url 'adminpanel:systems' %}">Clear</a>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="text-secondary small mb-2">{{ page.paginator.count }} system{{ page.paginator.count|pluralize }}</div>
+      {% if page.object_list %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Owner</th><th>Type</th><th class="text-end">Capacity</th><th>Location</th><th>Setup</th><th>Updated</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for s in page %}
+            <tr>
+              <td><a href="{% url 'adminpanel:user_detail' s.user.pk %}">{{ s.user.username }}</a></td>
+              <td>{{ s.get_system_type_display }}</td>
+              <td class="text-end">{{ s.capacity_kw }} kW</td>
+              <td class="small">{{ s.location_name|default:"—" }}</td>
+              <td>
+                {% if not s.has_location %}<span class="badge text-bg-warning">Location missing</span>
+                {% elif s.needs_battery and not s.has_battery %}<span class="badge text-bg-warning">Battery missing</span>
+                {% elif s.needs_grid_config and not s.has_grid %}<span class="badge text-bg-warning">Grid missing</span>
+                {% else %}<span class="badge text-bg-success">Complete</span>{% endif %}
+              </td>
+              <td class="small">{{ s.updated_at|date:"d M Y" }}</td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-light" href="{% url 'adminpanel:system_detail' s.pk %}">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-secondary mb-0">No systems match these filters.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include 'adminpanel/_pagination.html' %}
+</div>
+{% endblock %}

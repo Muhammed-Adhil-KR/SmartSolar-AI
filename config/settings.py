@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'forecast',
     'decision_support',
     'dashboard',
+    'adminpanel'
 ]
 
 MIDDLEWARE = [

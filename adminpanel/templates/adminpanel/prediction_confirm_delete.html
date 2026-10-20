@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Delete prediction · Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px">
+  <div class="card border-danger"><div class="card-body">
+    <h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle"></i> Delete this prediction?</h1>
+    <ul>
+      <li>Owner: <strong>{{ prediction.user.username }}</strong></li>
+      <li>For {{ prediction.prediction_for_date|date:"d M Y" }}: {{ prediction.predicted_generation_kwh }} kWh at {{ prediction.capacity_kw_used }} kW</li>
+    </ul>
+    <p class="small text-secondary">The recommendations built from this prediction are removed with it. The customer can generate a new prediction from their dashboard whenever they like.</p>
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-danger">Yes, delete</button>
+      <a class="btn btn-outline-light" href="{{ next }}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

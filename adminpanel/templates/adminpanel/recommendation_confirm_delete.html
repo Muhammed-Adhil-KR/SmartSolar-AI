@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete recommendation · Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px">
+  <div class="card border-danger"><div class="card-body">
+    <h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle"></i> Delete this recommendation?</h1>
+    <ul>
+      <li>Owner: <strong>{{ rec.user.username }}</strong></li>
+      <li>For {{ rec.prediction.prediction_for_date|date:"d M Y" }} · {{ rec.get_recommendation_type_display }}</li>
+      <li><strong>{{ rec.title }}</strong></li>
+    </ul>
+    <p class="small text-secondary">This only removes this single entry from the customer's history. It cannot be undone.</p>
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-danger">Yes, delete</button>
+      <a class="btn btn-outline-light" href="{{ next }}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

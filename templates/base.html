@@ -23,7 +23,7 @@
 <nav class="navbar navbar-expand-lg ss-navbar sticky-top" data-bs-theme="dark">
   <div class="container">
 
-   <a class="ss-brand" href="{% url 'dashboard:landing' %}" aria-label="SmartSolar home">
+   <a class="ss-brand" href="{% if user.is_staff %}{% url 'adminpanel:overview' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" aria-label="SmartSolar home">
       <span class="ss-mark"><i class="bi bi-sun-fill"></i></span>
       <span class="brand-name">Smart<span>Solar</span></span>
     </a>
@@ -40,7 +40,35 @@
       </div>
       <div class="offcanvas-body align-items-lg-center">
 
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and user.is_staff %}
+        {# ---- Staff: admin panel only, no customer features ---- #}
+        <ul class="navbar-nav mx-lg-auto gap-lg-1">
+          <li class="nav-item">
+            <a class="nav-link {% if rm.namespace == 'adminpanel' %}active{% endif %}" href="{% url 'adminpanel:overview' %}">
+              <i class="bi bi-shield-check me-1"></i>Admin panel</a>
+          </li>
+        </ul>
+
+        <div class="dropdown mt-3 mt-lg-0">
+          <button class="ss-usermenu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="ss-avatar">{{ user.username|slice:":2" }}</span>
+            <span class="d-none d-sm-inline fw-semibold">{{ user.username }}</span>
+            <i class="bi bi-chevron-down small"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-lg-end" data-bs-theme="light">
+            <li><h6 class="dropdown-header">Signed in as {{ user.username }}</h6></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+
+        {% elif user.is_authenticated %}
+        {# ---- Customer ---- #}
         <ul class="navbar-nav mx-lg-auto gap-lg-1">
           <li class="nav-item">
             <a class="nav-link {% if rm.url_name == 'home' %}active{% endif %}" href="{% url 'dashboard:home' %}">
@@ -135,10 +163,14 @@
       <span>· Solar decision support</span>
     </div>
     <div class="d-flex flex-wrap gap-3">
+      {% if user.is_staff %}
+      <a href="{% url 'adminpanel:overview' %}">Admin panel</a>
+      {% else %}
       <a href="{% url 'dashboard:landing' %}">Home</a>
       {% if user.is_authenticated %}
       <a href="{% url 'decision_support:current' %}">Recommendations</a>
       <a href="{% url 'forecast:prediction_history' %}">Predictions</a>
+      {% endif %}
       {% endif %}
     </div>
     <div><i class="bi bi-info-circle me-1"></i>All figures are estimates.</div>

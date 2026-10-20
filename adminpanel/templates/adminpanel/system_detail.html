@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}{{ owner.username }}'s system · Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <h1 class="h3 mb-0">Admin panel</h1>
+    <span class="badge text-bg-warning">Staff only</span>
+  </div>
+  <p class="text-secondary mb-3"><a class="text-secondary" href="{% url 'adminpanel:systems' %}">Systems</a> / {{ owner.username }}</p>
+
+  {% include 'adminpanel/_tabs.html' %}
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-sun me-1"></i>Solar system</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-5 text-secondary">Owner</dt>
+          <dd class="col-sm-7"><a href="{% url 'adminpanel:user_detail' owner.pk %}">{{ owner.username }}</a></dd>
+          <dt class="col-sm-5 text-secondary">Type</dt><dd class="col-sm-7">{{ system.get_system_type_display }}</dd>
+          <dt class="col-sm-5 text-secondary">Capacity</dt><dd class="col-sm-7">{{ system.capacity_kw }} kW</dd>
+          <dt class="col-sm-5 text-secondary">Panels</dt><dd class="col-sm-7">{{ system.panel_count|default_if_none:"—" }}</dd>
+          <dt class="col-sm-5 text-secondary">Inverter</dt>
+          <dd class="col-sm-7">{% if system.inverter_capacity_kw is not None %}{{ system.inverter_capacity_kw }} kW{% else %}—{% endif %}</dd>
+          <dt class="col-sm-5 text-secondary">Installed</dt><dd class="col-sm-7">{{ system.installation_date|date:"d M Y"|default:"—" }}</dd>
+          <dt class="col-sm-5 text-secondary">Location</dt><dd class="col-sm-7">{{ system.location_name|default:"Not set" }}</dd>
+          <dt class="col-sm-5 text-secondary">Coordinates</dt>
+          <dd class="col-sm-7">{% if system.has_location %}{{ system.latitude|floatformat:4 }}, {{ system.longitude|floatformat:4 }}{% else %}—{% endif %}</dd>
+          <dt class="col-sm-5 text-secondary">Created</dt><dd class="col-sm-7">{{ system.created_at|date:"d M Y" }}</dd>
+          <dt class="col-sm-5 text-secondary">Last updated</dt><dd class="col-sm-7">{{ system.updated_at|date:"d M Y, H:i" }}</dd>
+        </dl>
+      </div></div>
+    </div>
+
+    <div class="col-lg-6 d-flex flex-column gap-3">
+      <div class="card"><div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-battery-charging me-1"></i>Battery</h2>
+        {% if battery %}
+        <dl class="row mb-0 small">
+          <dt class="col-sm-6 text-secondary">Capacity</dt><dd class="col-sm-6">{{ battery.capacity_kwh }} kWh</dd>
+          <dt class="col-sm-6 text-secondary">Current charge</dt><dd class="col-sm-6">{{ battery.current_soc_percent|floatformat:"-1" }}%</dd>
+          <dt class="col-sm-6 text-secondary">Allowed range</dt><dd class="col-sm-6">{{ battery.minimum_soc_percent|floatformat:"-1" }}% – {{ battery.maximum_soc_percent|floatformat:"-1" }}%</dd>
+          <dt class="col-sm-6 text-secondary">Usable now</dt><dd class="col-sm-6">{{ battery.usable_energy_kwh }} kWh</dd>
+          <dt class="col-sm-6 text-secondary">Charging efficiency</dt><dd class="col-sm-6">{{ battery.charging_efficiency|floatformat:"-1" }}%</dd>
+        </dl>
+        {% elif system.needs_battery %}
+        <p class="text-warning mb-0">Required for this system type but not configured yet.</p>
+        {% else %}
+        <p class="text-secondary mb-0">Not needed for this system type.</p>
+        {% endif %}
+      </div></div>
+
+      <div class="card"><div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-lightning-charge me-1"></i>Grid</h2>
+        {% if grid %}
+        <dl class="row mb-0 small">
+          <dt class="col-sm-6 text-secondary">Import tariff</dt><dd class="col-sm-6">{{ grid.import_tariff_per_kwh }} per kWh</dd>
+          <dt class="col-sm-6 text-secondary">Export tariff</dt>
+          <dd class="col-sm-6">{% if grid.export_tariff_per_kwh is not None %}{{ grid.export_tariff_per_kwh }} per kWh{% else %}—{% endif %}</dd>
+          <dt class="col-sm-6 text-secondary">Export allowed</dt><dd class="col-sm-6">{{ grid.export_enabled|yesno:"Yes,No" }}</dd>
+          <dt class="col-sm-6 text-secondary">Net metering</dt><dd class="col-sm-6">{{ grid.net_metering_enabled|yesno:"Yes,No" }}</dd>
+        </dl>
+        {% elif system.needs_grid_config %}
+        <p class="text-warning mb-0">Required for this system type but not configured yet.</p>
+        {% else %}
+        <p class="text-secondary mb-0">Not needed for this system type.</p>
+        {% endif %}
+      </div></div>
+
+      <div class="card"><div class="card-body">
+        <h2 class="h6 mb-3">Activity</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-6 text-secondary">Appliances</dt>
+          <dd class="col-sm-6">{{ appliance_count }}{% if appliance_count %} · <a href="{% url 'adminpanel:appliances' %}?user={{ owner.pk }}">View</a>{% endif %}</dd>
+          <dt class="col-sm-6 text-secondary">Latest prediction</dt>
+          <dd class="col-sm-6">
+            {% if latest_prediction %}{{ latest_prediction.predicted_generation_kwh }} kWh for {{ latest_prediction.prediction_for_date|date:"d M Y" }}
+            {% else %}None yet{% endif %}
+          </dd>
+        </dl>
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

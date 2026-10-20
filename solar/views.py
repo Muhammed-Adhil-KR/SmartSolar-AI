@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .forms import LocationSearchForm, SolarSystemForm, BatteryForm, GridConfigurationForm
 from .services import search_locations, reverse_geocode, sync_system_dependencies
-from .decorators import next_setup_step
+from .decorators import customer_required, next_setup_step
 from django.db.models import Case, When, Value, IntegerField, Sum
 from django.core.paginator import Paginator
 
@@ -45,7 +44,7 @@ def build_step_context(system, current_key):
     return step_list
 
 
-@login_required
+@customer_required
 def setup_system(request):
     instance = getattr(request.user, 'solarsystem', None)
     if request.method == 'POST':
@@ -64,7 +63,7 @@ def setup_system(request):
     return render(request, 'solar/setup_system.html', {'form': form, 'steps': steps})
 
 
-@login_required
+@customer_required
 def setup_location(request):
     system = getattr(request.user, 'solarsystem', None)
     if not system:
@@ -85,7 +84,7 @@ def setup_location(request):
     return render(request, 'solar/setup_location.html', {'form': form, 'results': results, 'steps': steps})
 
 
-@login_required
+@customer_required
 def confirm_location(request):
     if request.method != 'POST':
         return redirect('solar:setup_location')
@@ -118,7 +117,7 @@ def confirm_location(request):
     return redirect(next_setup_step(request.user) or 'dashboard:home')
 
 
-@login_required
+@customer_required
 def edit_system(request):
     instance = getattr(request.user, 'solarsystem', None)
     if not instance:
@@ -147,7 +146,8 @@ def edit_system(request):
 
     return render(request, 'solar/edit_system.html', {'form': form})
 
-@login_required
+
+@customer_required
 def setup_battery(request):
     system = getattr(request.user, 'solarsystem', None)
     if not system or not system.needs_battery:
@@ -169,7 +169,7 @@ def setup_battery(request):
     return render(request, 'solar/setup_battery.html', {'form': form, 'steps': steps})
 
 
-@login_required
+@customer_required
 def setup_grid(request):
     system = getattr(request.user, 'solarsystem', None)
     if not system or not system.needs_grid_config:
@@ -191,9 +191,7 @@ def setup_grid(request):
     return render(request, 'solar/setup_grid.html', {'form': form, 'steps': steps})
 
 
-
-
-@login_required
+@customer_required
 def edit_battery(request):
     instance = getattr(request.user, 'battery', None)
     if request.method == 'POST':
@@ -210,7 +208,7 @@ def edit_battery(request):
     return render(request, 'solar/edit_battery.html', {'form': form})
 
 
-@login_required
+@customer_required
 def edit_grid(request):
     instance = getattr(request.user, 'gridconfiguration', None)
     if request.method == 'POST':
@@ -226,12 +224,13 @@ def edit_grid(request):
         form = GridConfigurationForm(instance=instance)
     return render(request, 'solar/edit_grid.html', {'form': form})
 
+
 from django.shortcuts import get_object_or_404
 from .models import Appliance
 from .forms import ApplianceForm
 
 
-@login_required
+@customer_required
 def appliance_list(request):
     appliances = Appliance.objects.filter(user=request.user)
 
@@ -306,7 +305,7 @@ def appliance_list(request):
     return render(request, 'solar/appliance_list.html', context)
 
 
-@login_required
+@customer_required
 def appliance_add(request):
     if request.method == 'POST':
         form = ApplianceForm(request.POST)
@@ -322,7 +321,7 @@ def appliance_add(request):
     return render(request, 'solar/appliance_form.html', {'form': form, 'mode': 'add'})
 
 
-@login_required
+@customer_required
 def appliance_edit(request, pk):
     # get_object_or_404 with user=request.user means another user's appliance
     # ID simply doesn't match a query result — genuine 404, not a leak.
@@ -339,7 +338,7 @@ def appliance_edit(request, pk):
     return render(request, 'solar/appliance_form.html', {'form': form, 'mode': 'edit', 'appliance': appliance})
 
 
-@login_required
+@customer_required
 def appliance_toggle_active(request, pk):
     appliance = get_object_or_404(Appliance, pk=pk, user=request.user)
     appliance.is_active = not appliance.is_active
@@ -350,7 +349,7 @@ def appliance_toggle_active(request, pk):
     return redirect('solar:appliance_list')
 
 
-@login_required
+@customer_required
 def appliance_delete(request, pk):
     appliance = get_object_or_404(Appliance, pk=pk, user=request.user)
     if request.method == 'POST':

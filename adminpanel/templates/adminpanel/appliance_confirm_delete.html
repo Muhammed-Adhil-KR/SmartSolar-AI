@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ appliance.name }} · Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px">
+  <div class="card border-danger"><div class="card-body">
+    <h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle"></i> Delete {{ appliance.name }}?</h1>
+    <p>This permanently removes the appliance below. It cannot be undone.</p>
+    <ul>
+      <li>Owner: <strong>{{ appliance.user.username }}</strong></li>
+      <li>{{ appliance.category }} · {{ appliance.rated_power_w|floatformat:"-1" }} W × {{ appliance.average_usage_hours|floatformat:"-1" }} h ({{ appliance.daily_energy_kwh|floatformat:"-2" }} kWh/day)</li>
+    </ul>
+    <p class="small text-secondary">{{ appliance.user.username }}'s recommendations will be rebuilt without it. To keep the record but stop it counting, deactivate it instead.</p>
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-danger">Yes, delete</button>
+      <a class="btn btn-outline-light" href="{{ next }}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

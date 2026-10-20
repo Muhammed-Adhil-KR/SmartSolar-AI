@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ target.username }} · Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <h1 class="h3 mb-0">Admin panel</h1>
+    <span class="badge text-bg-warning">Staff only</span>
+  </div>
+  <p class="text-secondary mb-3"><a class="text-secondary" href="{% url 'adminpanel:users' %}">Users</a> / {{ target.username }}</p>
+
+  {% include 'adminpanel/_tabs.html' %}
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card h-100"><div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h2 class="h5 mb-0">{{ target.username }}</h2>
+            <div class="text-secondary small">{{ target.get_full_name|default:"No name set" }}</div>
+          </div>
+          {% if target.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}
+        </div>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-4 text-secondary">Email</dt><dd class="col-sm-8">{{ target.email|default:"—" }}</dd>
+          <dt class="col-sm-4 text-secondary">Joined</dt><dd class="col-sm-8">{{ target.date_joined|date:"d M Y, H:i" }}</dd>
+          <dt class="col-sm-4 text-secondary">Last login</dt><dd class="col-sm-8">{{ target.last_login|date:"d M Y, H:i"|default:"Never" }}</dd>
+          <dt class="col-sm-4 text-secondary">Solar system</dt>
+          <dd class="col-sm-8">
+            {% if system %}{{ system.get_system_type_display }} · {{ system.capacity_kw }} kW · <a href="{% url 'adminpanel:system_detail' system.pk %}">View setup</a><br>
+            <span class="text-secondary">{{ system.location_name|default:"No location set" }}</span>
+            {% else %}Not set up yet{% endif %}
+          </dd>
+          <dt class="col-sm-4 text-secondary">Appliances</dt>
+          <dd class="col-sm-8">{{ appliance_count }}{% if appliance_count %} · <a href="{% url 'adminpanel:appliances' %}?user={{ target.pk }}">View</a>{% endif %}</dd>
+          <dt class="col-sm-4 text-secondary">Predictions</dt>
+          <dd class="col-sm-8">{{ prediction_count }}{% if prediction_count %} · <a href="{% url 'adminpanel:predictions' %}?user={{ target.pk }}">View</a>{% endif %}</dd>
+          <dt class="col-sm-4 text-secondary">Recommendations</dt>
+          <dd class="col-sm-8">{{ recommendation_count }}{% if recommendation_count %} · <a href="{% url 'adminpanel:recommendations' %}?user={{ target.pk }}">View</a>{% endif %}</dd>
+        </dl>
+      </div></div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 mb-3">Account actions</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <form method="post" action="{% url 'adminpanel:user_toggle' target.pk %}">
+            {% csrf_token %}
+            {% if target.is_active %}
+            <button class="btn btn-outline-warning" type="submit"><i class="bi bi-pause-circle"></i> Deactivate</button>
+            {% else %}
+            <button class="btn btn-outline-success" type="submit"><i class="bi bi-play-circle"></i> Activate</button>
+            {% endif %}
+          </form>
+          <a class="btn btn-outline-danger" href="{% url 'adminpanel:user_delete' target.pk %}"><i class="bi bi-trash"></i> Delete…</a>
+        </div>
+        <p class="small text-secondary mt-3 mb-0">Deactivating blocks login but keeps all data. Deleting removes the account and everything it owns. Customers edit their own details on their Profile page.</p>
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
